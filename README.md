@@ -5,31 +5,51 @@
 
 ---
 
-## Documentos
+## Se você está abrindo o projeto pela primeira vez: leia [`CONTINUAR.md`](./CONTINUAR.md)
 
+---
+
+## Documentos principais
+
+- [`CONTINUAR.md`](./CONTINUAR.md) — **leia primeiro** — ponto de partida para qualquer nova sessão
 - [`IDEIA.md`](./IDEIA.md) — visão do produto, problema, solução, modelo de negócio
-- [`ARQUITETURA.md`](./ARQUITETURA.md) — arquitetura técnica, stack, conector universal
-- [`INTEGRIDADE.md`](./INTEGRIDADE.md) — **camada de integridade (pilar fundamental)** — 5 checkpoints que todo dado atravessa
-- [`SCHEMA.md`](./SCHEMA.md) — schema do banco Supabase
-- [`ROADMAP.md`](./ROADMAP.md) — ordem de construção, fases, critérios de pronto
-- [`TESTES.md`](./TESTES.md) — testes mínimos por módulo
+- [`ARQUITETURA.md`](./ARQUITETURA.md) — stack, conector universal, IA
+- [`INTEGRIDADE.md`](./INTEGRIDADE.md) — **pilar fundamental** — 5 checkpoints obrigatórios
+- [`CAPTURA.md`](./CAPTURA.md) — captura multi-plataforma (WhatsApp, email, share sheet)
+- [`SCHEMA.md`](./SCHEMA.md) — banco Supabase compartilhado
+- [`ROADMAP.md`](./ROADMAP.md) — fases e critérios de pronto
+- [`TESTES.md`](./TESTES.md) — 8 testes mínimos por módulo
+- [`DECISOES.md`](./DECISOES.md) — log de decisões arquiteturais
+- [`IDEIAS_FUTURAS.md`](./IDEIAS_FUTURAS.md) — parking lot de ideias
 
 ---
 
-## Filosofia de construção
+## Micro-apps documentados
 
-1. **Cada app nasce completo e autônomo** — funciona offline, tem seus próprios testes passando
-2. **Só depois entra o conector** pro Cérebro
-3. **Três formas de entrada de dados** — digitação, importação (Excel/PDF/CSV), câmera/OCR
-4. **IA lê tudo pelo conector universal** — não precisa aprender cada app separado
+### Pronto para codar
+- [`apps/almoxarifado/`](./apps/almoxarifado/) — documentação completa (escopo, schema, conector)
+
+### Especificação parcial
+- [`apps/calculadora-boi/`](./apps/calculadora-boi/) — 3 modos definidos (compra, venda, conferência)
+- [`apps/pastagem/`](./apps/pastagem/)
+- [`apps/manejo-gado/`](./apps/manejo-gado/)
+- [`apps/obras/`](./apps/obras/)
+- [`apps/funcionarios/`](./apps/funcionarios/)
+- [`apps/aluguel/`](./apps/aluguel/)
+- [`apps/vida-pessoal/`](./apps/vida-pessoal/)
+- [`apps/bolsa-fii/`](./apps/bolsa-fii/)
+
+### Hub central
+- [`apps/cerebro/`](./apps/cerebro/) — consolidador (construído por último)
 
 ---
 
-## Status
+## Filosofia em uma frase
 
-Em fase de arquitetura. Próximo passo: schema Supabase.
+**Cada app nasce completo e sozinho. Só depois conecta. E nenhum dado entra no banco sem passar pelos cinco checkpoints da Camada de Integridade.**
 
 ---
 
 *Autor: Thiago Oliveira (tportooliveira-alt)*
 *Vitória da Conquista, Bahia — Brasil*
+*Abril 2026*
