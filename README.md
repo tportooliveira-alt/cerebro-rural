@@ -9,6 +9,7 @@
 
 - [`IDEIA.md`](./IDEIA.md) — visão do produto, problema, solução, modelo de negócio
 - [`ARQUITETURA.md`](./ARQUITETURA.md) — arquitetura técnica, stack, conector universal
+- [`INTEGRIDADE.md`](./INTEGRIDADE.md) — **camada de integridade (pilar fundamental)** — 5 checkpoints que todo dado atravessa
 - [`SCHEMA.md`](./SCHEMA.md) — schema do banco Supabase
 - [`ROADMAP.md`](./ROADMAP.md) — ordem de construção, fases, critérios de pronto
 - [`TESTES.md`](./TESTES.md) — testes mínimos por módulo
