@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cerebro Rural - Painel Interativo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f2eee4;
+      --panel: #fffaf0;
+      --panel-2: #f7f1e5;
+      --ink: #223128;
+      --muted: #55665b;
+      --line: #dbcdb3;
+      --accent: #1f7a4a;
+      --accent-2: #b8782e;
+      --danger: #b33a2f;
+      --shadow: 0 20px 40px rgba(50, 43, 30, 0.12);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 85% 5%, rgba(184, 120, 46, 0.18), transparent 32%),
+        radial-gradient(circle at 5% 95%, rgba(31, 122, 74, 0.18), transparent 28%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1200px, 94vw);
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: linear-gradient(165deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      padding: 20px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .brand {
+      font-family: "Merriweather", serif;
+      font-size: 1.35rem;
+      margin: 0;
+      letter-spacing: 0.3px;
+    }
+
+    .subtitle {
+      margin: 8px 0 16px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .module-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .module-btn {
+      text-align: left;
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: var(--ink);
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .module-btn:hover {
+      transform: translateY(-1px);
+      border-color: #b5a78f;
+      box-shadow: 0 10px 16px rgba(34, 49, 40, 0.08);
+    }
+
+    .module-btn.active {
+      border-color: rgba(31, 122, 74, 0.65);
+      box-shadow: 0 0 0 3px rgba(31, 122, 74, 0.12);
+      font-weight: 700;
+    }
+
+    .main {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: #fff;
+      display: grid;
+      gap: 8px;
+      animation: appear 0.5s ease both;
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-family: "Merriweather", serif;
+      font-size: 1.28rem;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.94rem;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .kpi {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      animation: appear 0.55s ease both;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .kpi .value {
+      font-weight: 700;
+      font-size: 1.14rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 10px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 220px;
+      animation: appear 0.6s ease both;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .bars {
+      display: grid;
+      gap: 9px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 64px;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.83rem;
+    }
+
+    .bar-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #efe6d7;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #5ea774);
+      transition: width 0.5s ease;
+    }
+
+    .events {
+      display: grid;
+      gap: 8px;
+      max-height: 250px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .event {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px;
+      font-size: 0.84rem;
+      background: #fffef9;
+    }
+
+    .event strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 0.86rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button.action {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.86rem;
+      transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    button.action:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.96);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #ead7b9;
+      color: #5b3c15;
+    }
+
+    .danger {
+      background: #f1cdc8;
+      color: #6a2018;
+    }
+
+    .log {
+      min-height: 46px;
+      margin-top: 6px;
+      padding: 9px;
+      border-radius: 10px;
+      border: 1px dashed var(--line);
+      font-size: 0.84rem;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .kpis {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="panel sidebar">
+      <h1 class="brand">Cerebro Rural</h1>
+      <p class="subtitle">Hub central dos micro-apps. Cada modulo funciona sozinho e conecta no fluxo unico de caixa.</p>
+
+      <div id="moduleList" class="module-list"></div>
+    </aside>
+
+    <main class="panel main">
+      <section class="hero">
+        <h2 id="heroTitle">Visao do modulo</h2>
+        <p id="heroDesc"></p>
+      </section>
+
+      <section class="kpis" id="kpiArea"></section>
+
+      <section class="grid">
+        <article class="card">
+          <h3>Contribuicao para o caixa consolidado</h3>
+          <div class="bars" id="barArea"></div>
+        </article>
+
+        <article class="card">
+          <h3>Eventos recentes do modulo</h3>
+          <div class="events" id="eventsArea"></div>
+        </article>
+      </section>
+
+      <section class="card">
+        <h3>Acoes de simulacao</h3>
+        <div class="actions">
+          <button class="action primary" id="btnEntrada">Simular nova entrada</button>
+          <button class="action secondary" id="btnImportar">Simular importacao de planilha</button>
+          <button class="action danger" id="btnAlerta">Disparar alerta de integridade</button>
+        </div>
+        <div class="log" id="logArea">Clique em uma acao para testar o comportamento da integracao.</div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const modules = [
+      {
+        id: "almoxarifado",
+        nome: "Almoxarifado",
+        objetivo: "Controla entrada, saida, saldo e custo medio de insumos com rastreio por setor e responsavel.",
+        kpis: {
+          "Movimentos no mes": "184",
+          "Itens em risco": "6",
+          "Valor em estoque": "R$ 128.430",
+          "Pendencias": "2"
+        },
+        contribuicoes: [
+          { nome: "Insumo nutricao", valor: 72 },
+          { nome: "Insumo manejo", valor: 46 },
+          { nome: "Ferramentas", valor: 21 },
+          { nome: "EPIs", valor: 14 }
+        ],
+        eventos: [
+          "Entrada de 120 sacos de sal mineral aprovada",
+          "Retirada para Pasto 2 validada por liberador",
+          "Importacao de inventario parcial concluida"
+        ]
+      },
+      {
+        id: "pastagem",
+        nome: "Pastagem",
+        objetivo: "Monitora area, UA, rotacao e capacidade dos pastos para apoiar decisao de custo e produtividade.",
+        kpis: {
+          "Pastos ativos": "14",
+          "UA utilizada": "83%",
+          "Rotacoes no mes": "27",
+          "Risco de lotacao": "3"
+        },
+        contribuicoes: [
+          { nome: "Adubacao", valor: 61 },
+          { nome: "Manejo solo", valor: 43 },
+          { nome: "Cerca", valor: 28 },
+          { nome: "Agua", valor: 19 }
+        ],
+        eventos: [
+          "Pasto 7 entrou em descanso planejado",
+          "Capacidade do Pasto 3 recalculada",
+          "Alerta de lotacao alta emitido"
+        ]
+      },
+      {
+        id: "obras",
+        nome: "Obras",
+        objetivo: "Controla etapas, medicao e custo de construcao para comparar planejado versus executado.",
+        kpis: {
+          "Obras ativas": "4",
+          "Atraso medio": "6 dias",
+          "Desvio de custo": "+4,7%",
+          "Pagamentos hoje": "3"
+        },
+        contribuicoes: [
+          { nome: "Material", valor: 67 },
+          { nome: "Mao de obra", valor: 52 },
+          { nome: "Frete", valor: 25 },
+          { nome: "Licencas", valor: 11 }
+        ],
+        eventos: [
+          "Mediacao da obra Barracao 1 registrada",
+          "Pagamento de concreto vinculado ao fluxo",
+          "Fornecedor com entrega parcial sinalizado"
+        ]
+      },
+      {
+        id: "funcionarios",
+        nome: "Funcionarios",
+        objetivo: "Gerencia folha, adiantamento e competencia para evitar furos no caixa e melhorar previsao.",
+        kpis: {
+          "Funcionarios ativos": "26",
+          "Folha prevista": "R$ 76.200",
+          "Adiantamentos": "9",
+          "Pendencias docs": "2"
+        },
+        contribuicoes: [
+          { nome: "Folha regular", valor: 74 },
+          { nome: "Adiantamentos", valor: 31 },
+          { nome: "Encargos", valor: 55 },
+          { nome: "Beneficios", valor: 26 }
+        ],
+        eventos: [
+          "Folha da competencia aberta para conferencia",
+          "Adiantamento do setor curral liberado",
+          "Aviso de documento vencendo em 7 dias"
+        ]
+      },
+      {
+        id: "aluguel",
+        nome: "Aluguel",
+        objetivo: "Rastreia contratos, vencimentos e inadimplencia para manter previsibilidade de receita.",
+        kpis: {
+          "Imoveis ativos": "11",
+          "Receita prevista": "R$ 39.000",
+          "Atrasos": "1",
+          "Contratos vencendo": "2"
+        },
+        contribuicoes: [
+          { nome: "Receita aluguel", valor: 88 },
+          { nome: "IPTU", valor: 16 },
+          { nome: "Manutencao", valor: 21 },
+          { nome: "Vacancia", valor: 12 }
+        ],
+        eventos: [
+          "Aluguel da Loja Centro compensado",
+          "Contrato da casa sede renova em 30 dias",
+          "Despesa de manutencao importada"
+        ]
+      },
+      {
+        id: "calculadora-boi",
+        nome: "Calculadora de Boi",
+        objetivo: "Avalia compra, venda e conferencia para transformar pesagem em decisao financeira imediata.",
+        kpis: {
+          "Operacoes no mes": "31",
+          "Margem media": "12,4%",
+          "Arroba media": "R$ 287",
+          "Alertas de preco": "5"
+        },
+        contribuicoes: [
+          { nome: "Compra", valor: 57 },
+          { nome: "Venda", valor: 82 },
+          { nome: "Frete", valor: 29 },
+          { nome: "Comissao", valor: 17 }
+        ],
+        eventos: [
+          "Conferencia de lote 004 concluida",
+          "Venda simulada com margem acima da meta",
+          "Preco de arroba favoravel detectado"
+        ]
+      }
+    ];
+
+    const heroTitle = document.getElementById("heroTitle");
+    const heroDesc = document.getElementById("heroDesc");
+    const moduleList = document.getElementById("moduleList");
+    const kpiArea = document.getElementById("kpiArea");
+    const barArea = document.getElementById("barArea");
+    const eventsArea = document.getElementById("eventsArea");
+    const logArea = document.getElementById("logArea");
+
+    let activeModule = modules[0];
+
+    function renderSidebar() {
+      moduleList.innerHTML = "";
+      modules.forEach((module) => {
+        const btn = document.createElement("button");
+        btn.className = `module-btn ${module.id === activeModule.id ? "active" : ""}`;
+        btn.textContent = module.nome;
+        btn.addEventListener("click", () => {
+          activeModule = module;
+          renderAll();
+          logArea.textContent = `Modulo ${module.nome} selecionado. Dados do caixa e eventos atualizados.`;
+        });
+        moduleList.appendChild(btn);
+      });
+    }
+
+    function renderKPIs() {
+      kpiArea.innerHTML = "";
+      Object.entries(activeModule.kpis).forEach(([label, value]) => {
+        const box = document.createElement("article");
+        box.className = "kpi";
+        box.innerHTML = `<span class="label">${label}</span><span class="value">${value}</span>`;
+        kpiArea.appendChild(box);
+      });
+    }
+
+    function renderBars() {
+      barArea.innerHTML = "";
+      activeModule.contribuicoes.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "bar-row";
+        row.innerHTML = `
+          <span>${item.nome}</span>
+          <div class="bar-track"><div class="bar-fill" style="width: ${item.valor}%"></div></div>
+          <strong>${item.valor}%</strong>
+        `;
+        barArea.appendChild(row);
+      });
+    }
+
+    function renderEvents() {
+      eventsArea.innerHTML = "";
+      activeModule.eventos.forEach((eventText, index) => {
+        const el = document.createElement("article");
+        el.className = "event";
+        el.innerHTML = `<strong>Evento ${index + 1}</strong><span>${eventText}</span>`;
+        eventsArea.appendChild(el);
+      });
+    }
+
+    function renderHero() {
+      heroTitle.textContent = `${activeModule.nome} conectado ao Cérebro`;
+      heroDesc.textContent = activeModule.objetivo;
+    }
+
+    function renderAll() {
+      renderSidebar();
+      renderHero();
+      renderKPIs();
+      renderBars();
+      renderEvents();
+    }
+
+    document.getElementById("btnEntrada").addEventListener("click", () => {
+      logArea.textContent = `${activeModule.nome}: evento de entrada registrado e enviado para o conector universal.`;
+    });
+
+    document.getElementById("btnImportar").addEventListener("click", () => {
+      logArea.textContent = `${activeModule.nome}: planilha importada, colunas mapeadas e lancamentos consolidados.`;
+    });
+
+    document.getElementById("btnAlerta").addEventListener("click", () => {
+      logArea.textContent = `${activeModule.nome}: anomalia detectada no checkpoint de integridade. Revisao manual solicitada.`;
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>

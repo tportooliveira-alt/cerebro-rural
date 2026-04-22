@@ -92,3 +92,15 @@ Exemplos:
 ## Status
 
 Em especificação. Será construído depois que pelo menos 2 micro-apps estiverem em produção alimentando a tabela `lancamentos`.
+
+---
+
+## Prototipo Interativo (local)
+
+Foi adicionado um prototipo navegavel para validar UX e fluxo do hub central antes da fase de codigo oficial:
+
+- Arquivo: `prototipo-dashboard.html`
+- Como abrir: clique duas vezes no arquivo ou abra no navegador
+- Objetivo: testar visual, navegacao por modulo, contribuicao no caixa e simulacoes de integracao
+
+Esse prototipo nao substitui a implementacao oficial em React + Supabase. Ele serve para validar estrutura e conversa de produto com rapidez.
