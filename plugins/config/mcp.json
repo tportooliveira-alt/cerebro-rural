@@ -1,0 +1,65 @@
+{
+  "servers": [
+    {
+      "name": "filesystem",
+      "module": "fs",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${WORKSPACE}"]
+    },
+    {
+      "name": "git",
+      "module": "git",
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "${WORKSPACE}"]
+    },
+    {
+      "name": "github",
+      "module": "github",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
+    },
+    {
+      "name": "postgres",
+      "module": "pg",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "${POSTGRES_URL}"]
+    },
+    {
+      "name": "sqlite",
+      "module": "sqlite",
+      "command": "uvx",
+      "args": ["mcp-server-sqlite", "--db-path", "${SQLITE_DB}"]
+    },
+    {
+      "name": "memory",
+      "module": "memory",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    {
+      "name": "fetch",
+      "module": "fetch",
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    },
+    {
+      "name": "time",
+      "module": "time",
+      "command": "uvx",
+      "args": ["mcp-server-time"]
+    },
+    {
+      "name": "sequential-thinking",
+      "module": "think",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    {
+      "name": "everything",
+      "module": "everything",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"]
+    }
+  ]
+}
