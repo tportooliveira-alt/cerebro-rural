@@ -19,6 +19,7 @@
 - [`SCHEMA.md`](./SCHEMA.md) — banco Supabase compartilhado
 - [`ROADMAP.md`](./ROADMAP.md) — fases e critérios de pronto
 - [`TESTES.md`](./TESTES.md) — 8 testes mínimos por módulo
+- [`ADAPTADOR_UNIVERSAL_GO_PLUGIN.md`](./ADAPTADOR_UNIVERSAL_GO_PLUGIN.md) — blueprint do adaptador universal multi-linguagem (go-plugin + gRPC)
 - [`DECISOES.md`](./DECISOES.md) — log de decisões arquiteturais
 - [`IDEIAS_FUTURAS.md`](./IDEIAS_FUTURAS.md) — parking lot de ideias
 
