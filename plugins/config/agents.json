@@ -1,0 +1,111 @@
+{
+  "providers": [
+    {
+      "name": "openai",
+      "base_url": "https://api.openai.com/v1",
+      "api_key": "${OPENAI_API_KEY}",
+      "model": "gpt-4o-mini"
+    },
+    {
+      "name": "groq",
+      "base_url": "https://api.groq.com/openai/v1",
+      "api_key": "${GROQ_API_KEY}",
+      "model": "llama-3.3-70b-versatile"
+    },
+    {
+      "name": "openrouter",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key": "${OPENROUTER_API_KEY}",
+      "model": "anthropic/claude-3.5-sonnet",
+      "headers": { "HTTP-Referer": "https://cerebro-rural.local", "X-Title": "Cerebro Rural" }
+    },
+    {
+      "name": "deepseek",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key": "${DEEPSEEK_API_KEY}",
+      "model": "deepseek-chat"
+    },
+    {
+      "name": "together",
+      "base_url": "https://api.together.xyz/v1",
+      "api_key": "${TOGETHER_API_KEY}",
+      "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+    },
+    {
+      "name": "fireworks",
+      "base_url": "https://api.fireworks.ai/inference/v1",
+      "api_key": "${FIREWORKS_API_KEY}",
+      "model": "accounts/fireworks/models/llama-v3p3-70b-instruct"
+    },
+    {
+      "name": "ollama",
+      "base_url": "http://localhost:11434/v1",
+      "api_key": "ollama",
+      "model": "llama3.1"
+    },
+    {
+      "name": "lmstudio",
+      "base_url": "http://localhost:1234/v1",
+      "api_key": "lm-studio",
+      "model": "local-model"
+    },
+    {
+      "name": "azure-openai",
+      "base_url": "${AZURE_OPENAI_BASE_URL}",
+      "api_key": "${AZURE_OPENAI_API_KEY}",
+      "model": "${AZURE_OPENAI_DEPLOYMENT}",
+      "headers": { "api-key": "${AZURE_OPENAI_API_KEY}" }
+    }
+  ],
+  "agents": [
+    {
+      "name": "pesquisador",
+      "module": "agent",
+      "action": "research",
+      "provider": "openai",
+      "system_prompt": "Você é um agente pesquisador. Use fetch para buscar fontes, memory para registrar fatos-chave e sequential-thinking para raciocinar passo a passo. Cite sempre as fontes.",
+      "tools": ["fetch", "memory", "think"],
+      "max_iters": 10
+    },
+    {
+      "name": "codista",
+      "module": "agent",
+      "action": "code",
+      "provider": "groq",
+      "system_prompt": "Você é um engenheiro de software. Use fs para ler/escrever código, git para ver histórico e think para planejar mudanças antes de editar.",
+      "tools": ["fs", "git", "think"],
+      "max_iters": 12
+    },
+    {
+      "name": "dba",
+      "module": "agent",
+      "action": "sql",
+      "provider": "deepseek",
+      "system_prompt": "Você é um DBA read-only. Use postgres/sqlite apenas para consultas. Sempre explique o plano antes de executar.",
+      "tools": ["pg", "sqlite", "think"],
+      "max_iters": 8
+    },
+    {
+      "name": "revisor-pr",
+      "module": "agent",
+      "action": "review",
+      "provider": "openrouter",
+      "system_prompt": "Você é revisor de PRs. Use github para buscar diffs e comentários, git para contexto local, think para estruturar o parecer.",
+      "tools": ["github", "git", "think"],
+      "max_iters": 10
+    },
+    {
+      "name": "planejador",
+      "module": "agent",
+      "action": "plan",
+      "provider": "ollama",
+      "system_prompt": "Você é um planejador. Decomponha o pedido em passos curtos e descreva qual agente usaria em cada passo (pesquisador/codista/dba/revisor-pr).",
+      "tools": ["think", "memory"],
+      "max_iters": 6
+    }
+  ],
+  "orchestrator": {
+    "module": "orq",
+    "agents": ["planejador", "pesquisador", "codista", "dba", "revisor-pr"]
+  }
+}
