@@ -1,7 +1,3 @@
-// cerebro-host — CLI mínima que carrega um plugin binário e executa um Command.
-// Uso:
-//   cerebro-host run --plugin ./bin/hello.exe --tenant demo --module hello \
-//                    --action ping --payload '{"name":"mundo"}'
 package main
 
 import (
@@ -32,7 +28,7 @@ func main() {
 			os.Exit(1)
 		}
 	case "version":
-		fmt.Println("cerebro-host v0.1.0 protocol 1.0")
+		fmt.Println("cerebro-host v0.2.0 protocol 1.0")
 	default:
 		usage()
 		os.Exit(2)
@@ -40,7 +36,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "uso: cerebro-host run --plugin PATH --tenant T --module M --action A [--payload JSON]")
+	fmt.Fprintln(os.Stderr, "uso: cerebro-host run --plugin PATH --tenant T --module M --action A [--payload JSON] [--request-id ID] [--audit FILE]")
 }
 
 func runCmd(args []string) error {
@@ -50,6 +46,8 @@ func runCmd(args []string) error {
 	module := fs.String("module", "", "módulo")
 	action := fs.String("action", "", "ação")
 	payload := fs.String("payload", "{}", "payload JSON")
+	requestID := fs.String("request-id", "", "request_id fixo")
+	auditPath := fs.String("audit", "", "arquivo de auditoria")
 	timeout := fs.Duration("timeout", 5*time.Second, "timeout total")
 	_ = fs.Parse(args)
 
@@ -58,7 +56,7 @@ func runCmd(args []string) error {
 		return fmt.Errorf("flags obrigatórias ausentes")
 	}
 	if !json.Valid([]byte(*payload)) {
-		return fmt.Errorf("payload inválido, não é JSON")
+		return fmt.Errorf("payload inválido")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
@@ -67,22 +65,42 @@ func runCmd(args []string) error {
 	reg := registry.New(adapter.NewBinaryAdapter())
 	defer reg.CloseAll()
 
-	src := adapter.Source{
-		ID:       "cli-plugin",
-		Kind:     "binary",
-		Location: *pluginPath,
-	}
-	ext, err := reg.Load(ctx, src)
+	ext, err := reg.Load(ctx, adapter.Source{ID: "cli-plugin", Kind: "binary", Location: *pluginPath})
 	if err != nil {
 		return err
 	}
 
 	ver, _ := ext.Version(ctx)
-	fmt.Printf("plugin: %s v%s  protocolo v%d.%d\n",
-		ver.PluginId, ver.PluginVersion, ver.ProtocolMajor, ver.ProtocolMinor)
+	fmt.Printf("plugin: %s v%s  protocolo v%d.%d\n", ver.PluginId, ver.PluginVersion, ver.ProtocolMajor, ver.ProtocolMinor)
 
+	var sink integrity.AuditSink = integrity.NewStdoutAudit()
+	if *auditPath != "" {
+		fsink, ferr := integrity.NewFileAudit(*auditPath)
+		if ferr != nil {
+			return fmt.Errorf("audit: %w", ferr)
+		}
+		sink = fsink
+	}
+
+	allow := integrity.NewStaticAllowlist()
+	allow.Allow(*tenant, *module, *action)
+
+	pipe := integrity.NewPipeline(
+		[]integrity.Step{
+			integrity.SchemaStep{},
+			integrity.IdempotencyStep{Store: integrity.NewMemoryStore(), TTL: 24 * time.Hour},
+			integrity.PermissionsStep{Provider: allow},
+			integrity.NewCoherenceStep(),
+		},
+		integrity.WithAudit(sink),
+	)
+
+	reqID := *requestID
+	if reqID == "" {
+		reqID = uuid.NewString()
+	}
 	cmd := &extv1.Command{
-		RequestId:   uuid.NewString(),
+		RequestId:   reqID,
 		TenantId:    *tenant,
 		Module:      *module,
 		Action:      *action,
@@ -90,12 +108,12 @@ func runCmd(args []string) error {
 		Meta:        map[string]string{"source": "cli", "ts": time.Now().UTC().Format(time.RFC3339)},
 	}
 
-	pipe := integrity.NewPipeline() // fase 1: pipeline vazio + Validate do plugin
 	if err := pipe.Run(ctx, ext, cmd); err != nil {
+		pipe.Commit(ctx, cmd, nil, err)
 		return err
 	}
-
 	resp, err := ext.Execute(ctx, cmd)
+	pipe.Commit(ctx, cmd, resp, err)
 	if err != nil {
 		return err
 	}
