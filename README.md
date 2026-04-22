@@ -20,6 +20,7 @@
 - [`ROADMAP.md`](./ROADMAP.md) — fases e critérios de pronto
 - [`TESTES.md`](./TESTES.md) — 8 testes mínimos por módulo
 - [`ADAPTADOR_UNIVERSAL_GO_PLUGIN.md`](./ADAPTADOR_UNIVERSAL_GO_PLUGIN.md) — blueprint do adaptador universal multi-linguagem (go-plugin + gRPC)
+- [`plugins/`](./plugins/) — implementação Fase 1: contrato gRPC, host Go, SDK e plugin `hello`
 - [`DECISOES.md`](./DECISOES.md) — log de decisões arquiteturais
 - [`IDEIAS_FUTURAS.md`](./IDEIAS_FUTURAS.md) — parking lot de ideias
 

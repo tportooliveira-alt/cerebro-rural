@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package cerebro.extension.v1;
+
+option go_package = "github.com/tportooliveira-alt/cerebro-rural/plugins/proto/extension/v1;extensionv1";
+
+// ExtensionService — contrato único que todo plugin (binário, script, remoto)
+// precisa implementar. O host fala sempre esse dialeto; adapters traduzem.
+service ExtensionService {
+  rpc Health(HealthRequest) returns (HealthResponse);
+  rpc Version(VersionRequest) returns (VersionResponse);
+  rpc Capabilities(CapabilitiesRequest) returns (CapabilitiesResponse);
+  rpc Validate(Command) returns (ValidateResponse);
+  rpc Execute(Command) returns (ExecuteResponse);
+}
+
+message HealthRequest {}
+message HealthResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message VersionRequest {}
+message VersionResponse {
+  // Versão do protocolo que o plugin fala. Host aceita se:
+  //   protocol_major == host.major && protocol_minor <= host.minor
+  uint32 protocol_major = 1;
+  uint32 protocol_minor = 2;
+  // Identidade do plugin
+  string plugin_id      = 3;
+  string plugin_version = 4;
+}
+
+message CapabilitiesRequest {}
+message CapabilitiesResponse {
+  repeated Capability capabilities = 1;
+}
+message Capability {
+  string module = 1;           // ex: "caixa", "manejo-gado"
+  string action = 2;           // ex: "lancar", "transferir"
+  string schema_payload = 3;   // JSON Schema do payload esperado
+  repeated string required_permissions = 4;
+}
+
+// Command — unidade universal de intenção
+message Command {
+  string request_id = 1;       // idempotência + trace
+  string tenant_id  = 2;       // multi-tenant obrigatório
+  string module     = 3;
+  string action     = 4;
+  string payload_json = 5;     // payload livre validado por schema
+  map<string,string> meta = 6; // cabeçalhos (user_id, origin, ts, etc.)
+}
+
+message ValidateResponse {
+  bool ok = 1;
+  repeated Issue issues = 2;
+}
+
+message ExecuteResponse {
+  bool ok = 1;
+  string result_json = 2;       // resultado de negócio
+  repeated Issue issues = 3;
+  repeated Effect effects = 4;  // efeitos declarados (caixa, auditoria, etc.)
+}
+
+message Issue {
+  enum Severity {
+    SEVERITY_UNSPECIFIED = 0;
+    INFO    = 1;
+    WARNING = 2;
+    ERROR   = 3;
+  }
+  Severity severity = 1;
+  string code = 2;
+  string message = 3;
+  string path = 4;
+}
+
+message Effect {
+  string kind = 1;        // "caixa.lancamento" | "audit.event" | ...
+  string ref_id = 2;      // id gerado pelo plugin
+  string payload_json = 3;
+}
