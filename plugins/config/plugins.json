@@ -1,0 +1,44 @@
+{
+  "plugins": [
+    {
+      "name": "hello",
+      "module": "hello",
+      "kind": "binary",
+      "path": "bin/hello.exe",
+      "description": "Plugin de referência. Ação ping ecoa o nome recebido.",
+      "actions": ["ping"]
+    },
+    {
+      "name": "docs",
+      "module": "docs",
+      "kind": "binary",
+      "path": "bin/docs.exe",
+      "description": "Adaptador universal de leitura de documentos. Detecta formato (xlsx, xls, csv, tsv, pdf, json, xml, txt, md) por extensão + magic bytes e devolve conteúdo em JSON.",
+      "actions": ["detect", "read", "text", "sheets", "cells"],
+      "formats": ["xlsx", "xlsm", "csv", "tsv", "pdf", "json", "xml", "txt", "md"],
+      "limits": { "max_bytes": 67108864 },
+      "examples": [
+        {
+          "action": "detect",
+          "payload": { "path": "C:/abs/path/arquivo.xlsx" }
+        },
+        {
+          "action": "read",
+          "payload": { "path": "C:/abs/path/arquivo.csv" }
+        },
+        {
+          "action": "sheets",
+          "payload": { "path": "C:/abs/path/livro.xlsx" }
+        },
+        {
+          "action": "cells",
+          "payload": { "path": "C:/abs/path/livro.xlsx", "sheet": "Janeiro", "range": "A1:D10" }
+        },
+        {
+          "action": "text",
+          "payload": { "path": "C:/abs/path/relatorio.pdf" }
+        }
+      ]
+    }
+  ]
+}
