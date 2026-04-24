@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cérebro · Mobile (empresário)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+            mono: ['JetBrains Mono', 'ui-monospace'],
+          },
+          colors: {
+            bg:      '#0b0f0d',
+            panel:   '#141c18',
+            panel2:  '#1a2520',
+            line:    '#243029',
+            ink:     '#e9efe9',
+            muted:   '#8aa094',
+            accent:  '#3ddb87',
+            accent2: '#f5b248',
+            ok:      '#3ddb87',
+            warn:    '#f5b248',
+            danger:  '#ff6b6b',
+            blue:    '#60a5fa',
+            violet:  '#c084fc',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(61,219,135,0.08), transparent 35%),
+        radial-gradient(circle at 85% 100%, rgba(245,178,72,0.06), transparent 35%),
+        #0a0a0a;
+    }
+    .mono { font-family: 'JetBrains Mono', ui-monospace; }
+    .scroll-thin::-webkit-scrollbar { width: 0; }
+    .pill { padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 500; }
+
+    /* iPhone frame */
+    .iphone {
+      width: 390px;
+      height: 844px;
+      background: #000;
+      border-radius: 48px;
+      padding: 12px;
+      box-shadow:
+        0 0 0 1.5px #1d1d1d,
+        0 0 0 12px #0a0a0a,
+        0 0 0 13px #2a2a2a,
+        0 30px 80px -20px rgba(0,0,0,0.8),
+        0 0 80px -20px rgba(61,219,135,0.15);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      background: #0b0f0d;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      color: #e9efe9;
+    }
+    .dynamic-island {
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 36px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 50;
+    }
+    .status-bar {
+      padding: 16px 28px 8px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; font-weight: 600;
+      position: relative; z-index: 10;
+    }
+    .home-indicator {
+      position: absolute; bottom: 8px; left: 50%;
+      transform: translateX(-50%);
+      width: 134px; height: 5px;
+      background: #fff; border-radius: 3px; opacity: 0.9;
+    }
+    .screen-content {
+      height: calc(100% - 52px);
+      overflow-y: auto;
+      padding-bottom: 100px;
+    }
+    .screen-content::-webkit-scrollbar { display: none; }
+    .bottom-nav {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(20,28,24,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid #243029;
+      padding: 8px 16px 24px;
+      display: flex; justify-content: space-around; align-items: center;
+      z-index: 20;
+    }
+    .nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      color: #8aa094; font-size: 10px; padding: 6px 12px;
+      cursor: pointer;
+    }
+    .nav-btn.active { color: #3ddb87; }
+    .nav-btn.fab {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #3ddb87, #f5b248);
+      border-radius: 999px;
+      color: #0b0f0d;
+      margin-top: -20px;
+      box-shadow: 0 8px 24px -4px rgba(61,219,135,0.4);
+    }
+    .label {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.08em; font-weight: 600;
+      color: #8aa094;
+    }
+    .card {
+      background: #141c18;
+      border: 1px solid #243029;
+      border-radius: 16px;
+    }
+    .ring-pulse {
+      animation: ringPulse 2s infinite;
+    }
+    @keyframes ringPulse {
+      0% { box-shadow: 0 0 0 0 rgba(61,219,135,0.5); }
+      70% { box-shadow: 0 0 0 12px rgba(61,219,135,0); }
+      100% { box-shadow: 0 0 0 0 rgba(61,219,135,0); }
+    }
+    .phone-label {
+      text-align: center; margin-top: 16px;
+      color: #8aa094; font-size: 13px;
+    }
+    .phone-label span { color: #3ddb87; font-weight: 600; }
+
+    /* Bottom sheet (modal) */
+    .sheet {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: #141c18;
+      border-top-left-radius: 24px; border-top-right-radius: 24px;
+      border-top: 1px solid #243029;
+      padding: 16px 20px 100px;
+      max-height: 85%;
+      overflow-y: auto;
+      z-index: 15;
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
+    }
+    .sheet-handle {
+      width: 40px; height: 4px; background: #243029; border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+  </style>
+</head>
+<body class="text-ink min-h-screen">
+
+<!-- Header -->
+<div class="text-center py-8">
+  <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-panel border border-line">
+    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-bg font-bold text-sm">C</div>
+    <div class="text-left">
+      <div class="font-bold text-sm">Cérebro · Mobile</div>
+      <div class="text-xs text-muted">painel pro empresário · iOS / Android (PWA)</div>
+    </div>
+  </div>
+  <h1 class="mt-6 text-3xl font-bold">A empresa inteira no bolso</h1>
+  <p class="mt-2 text-muted max-w-md mx-auto">3 toques pra ver caixa, cobrança, e o que tá pegando hoje. Lançamento por foto, voz ou WhatsApp.</p>
+</div>
+
+<!-- 3 iPhones lado a lado -->
+<div class="flex gap-12 justify-center items-start py-12 px-6 overflow-x-auto scroll-thin">
+
+  <!-- ============== TELA 1: HOME ============== -->
+  <div>
+    <div class="iphone">
+      <div class="iphone-screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="flex items-center gap-1">
+            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+            <i data-lucide="battery-full" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <div class="screen-content px-5">
+          <!-- Header -->
+          <div class="pt-4 pb-5 flex items-center gap-3">
+            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-accent2 to-accent flex items-center justify-center text-bg font-bold">T</div>
+            <div class="flex-1">
+              <div class="text-xs text-muted">Bom dia, Thiago 👋</div>
+              <div class="text-base font-bold">Empresa Lagoa LTDA</div>
+            </div>
+            <button class="relative p-2.5 rounded-full bg-panel border border-line">
+              <i data-lucide="bell" class="w-4 h-4"></i>
+              <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+            </button>
+          </div>
+
+          <!-- Saldo card grande -->
+          <div class="card p-5 bg-gradient-to-br from-panel to-panel2 mb-3">
+            <div class="text-xs text-muted">Saldo de hoje</div>
+            <div class="mt-1 text-3xl font-bold">R$ 84.230<span class="text-lg text-muted">,12</span></div>
+            <div class="mt-3 flex items-center gap-1 text-sm text-ok">
+              <i data-lucide="trending-up" class="w-4 h-4"></i>
+              +R$ 6.420 esta semana
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+              <div class="bg-panel2 rounded-lg p-3">
+                <div class="text-[10px] text-muted uppercase">A receber</div>
+                <div class="text-lg font-bold text-ok mt-0.5">R$ 32.480</div>
+              </div>
+              <div class="bg-panel2 rounded-lg p-3">
+                <div class="text-[10px] text-muted uppercase">A pagar</div>
+                <div class="text-lg font-bold text-danger mt-0.5">R$ 18.940</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Atalhos -->
+          <div class="grid grid-cols-4 gap-2 mb-5">
+            <button class="card p-3 flex flex-col items-center gap-1.5">
+              <div class="w-10 h-10 rounded-full bg-accent/15 text-accent flex items-center justify-center"><i data-lucide="camera" class="w-5 h-5"></i></div>
+              <div class="text-[10px] text-center font-medium">Foto<br/>recibo</div>
+            </button>
+            <button class="card p-3 flex flex-col items-center gap-1.5">
+              <div class="w-10 h-10 rounded-full bg-accent2/15 text-accent2 flex items-center justify-center"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></div>
+              <div class="text-[10px] text-center font-medium">Importar<br/>planilha</div>
+            </button>
+            <button class="card p-3 flex flex-col items-center gap-1.5">
+              <div class="w-10 h-10 rounded-full bg-blue/15 text-blue flex items-center justify-center"><i data-lucide="message-circle" class="w-5 h-5"></i></div>
+              <div class="text-[10px] text-center font-medium">WhatsApp<br/>bot</div>
+            </button>
+            <button class="card p-3 flex flex-col items-center gap-1.5">
+              <div class="w-10 h-10 rounded-full bg-violet/15 text-violet flex items-center justify-center"><i data-lucide="users" class="w-5 h-5"></i></div>
+              <div class="text-[10px] text-center font-medium">Cobrar<br/>cliente</div>
+            </button>
+          </div>
+
+          <!-- Hoje -->
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-sm font-bold">Hoje</div>
+            <a class="text-xs text-accent">ver tudo</a>
+          </div>
+          <div class="space-y-2 mb-5">
+            <div class="card p-3 flex items-center gap-3 border-l-2 border-l-warn">
+              <div class="w-9 h-9 rounded-lg bg-warn/15 text-warn flex items-center justify-center"><i data-lucide="clock" class="w-4 h-4"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold">3 boletos vencem hoje</div>
+                <div class="text-xs text-muted">total R$ 4.812,30</div>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-muted"></i>
+            </div>
+            <div class="card p-3 flex items-center gap-3 border-l-2 border-l-danger">
+              <div class="w-9 h-9 rounded-lg bg-danger/15 text-danger flex items-center justify-center"><i data-lucide="user-x" class="w-4 h-4"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold">Cliente A em atraso (5d)</div>
+                <div class="text-xs text-muted">R$ 8.500 · sugerir cobrança?</div>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-muted"></i>
+            </div>
+            <div class="card p-3 flex items-center gap-3 border-l-2 border-l-accent">
+              <div class="w-9 h-9 rounded-lg bg-accent/15 text-accent flex items-center justify-center"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold">Vendas +18% vs. semana anterior</div>
+                <div class="text-xs text-muted">3 produtos puxando</div>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-muted"></i>
+            </div>
+          </div>
+
+          <!-- Mini gráfico -->
+          <div class="card p-4 mb-3">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm font-bold">Fluxo · 7 dias</div>
+              <span class="text-xs text-ok">▲ R$ 6.420</span>
+            </div>
+            <svg viewBox="0 0 320 80" class="w-full h-20">
+              <defs>
+                <linearGradient id="m1" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#3ddb87" stop-opacity="0.5"/>
+                  <stop offset="100%" stop-color="#3ddb87" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,60 C40,55 80,40 120,45 C160,50 200,30 240,25 C280,20 300,35 320,30 L320,80 L0,80 Z" fill="url(#m1)"/>
+              <path d="M0,60 C40,55 80,40 120,45 C160,50 200,30 240,25 C280,20 300,35 320,30" fill="none" stroke="#3ddb87" stroke-width="2"/>
+            </svg>
+          </div>
+
+          <!-- Equipe -->
+          <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm font-bold">Equipe online</div>
+              <span class="text-xs text-muted">3 ativos</span>
+            </div>
+            <div class="flex -space-x-2">
+              <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-bg text-xs font-bold border-2 border-panel">M</div>
+              <div class="w-8 h-8 rounded-full bg-accent2 flex items-center justify-center text-bg text-xs font-bold border-2 border-panel">P</div>
+              <div class="w-8 h-8 rounded-full bg-violet flex items-center justify-center text-bg text-xs font-bold border-2 border-panel">A</div>
+              <div class="w-8 h-8 rounded-full bg-panel2 border border-line flex items-center justify-center text-muted text-xs">+5</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div class="bottom-nav">
+          <button class="nav-btn active">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            <span>Início</span>
+          </button>
+          <button class="nav-btn">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+            <span>Caixa</span>
+          </button>
+          <button class="nav-btn fab ring-pulse">
+            <i data-lucide="plus" class="w-7 h-7"></i>
+          </button>
+          <button class="nav-btn">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+            <span>IA</span>
+          </button>
+          <button class="nav-btn">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+            <span>Mais</span>
+          </button>
+        </div>
+
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+    <div class="phone-label"><span>1.</span> Home — caixa, alertas, atalhos</div>
+  </div>
+
+  <!-- ============== TELA 2: NOVO LANÇAMENTO (bottom sheet) ============== -->
+  <div>
+    <div class="iphone">
+      <div class="iphone-screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="flex items-center gap-1">
+            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+            <i data-lucide="battery-full" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <!-- Tela "atrás" desfocada -->
+        <div class="screen-content px-5 opacity-30 blur-sm">
+          <div class="card p-5 mt-4">
+            <div class="text-xs text-muted">Saldo de hoje</div>
+            <div class="text-3xl font-bold">R$ 84.230,12</div>
+          </div>
+        </div>
+
+        <!-- Bottom sheet -->
+        <div class="sheet">
+          <div class="sheet-handle"></div>
+          <div class="text-base font-bold mb-1">Nova movimentação</div>
+          <div class="text-xs text-muted mb-4">IA classifica pra você · revise antes de salvar</div>
+
+          <!-- Tipo (segmented) -->
+          <div class="flex bg-panel2 rounded-lg p-1 mb-4">
+            <button class="flex-1 py-2 rounded-md bg-danger/15 text-danger text-sm font-semibold">Saída</button>
+            <button class="flex-1 py-2 rounded-md text-muted text-sm">Entrada</button>
+            <button class="flex-1 py-2 rounded-md text-muted text-sm">Transfer</button>
+          </div>
+
+          <!-- Origem do lançamento -->
+          <div class="grid grid-cols-4 gap-2 mb-4">
+            <button class="card p-2 flex flex-col items-center gap-1 border-accent/40 bg-accent/5">
+              <i data-lucide="camera" class="w-4 h-4 text-accent"></i>
+              <span class="text-[10px] text-accent font-semibold">Foto</span>
+            </button>
+            <button class="card p-2 flex flex-col items-center gap-1">
+              <i data-lucide="mic" class="w-4 h-4 text-muted"></i>
+              <span class="text-[10px] text-muted">Voz</span>
+            </button>
+            <button class="card p-2 flex flex-col items-center gap-1">
+              <i data-lucide="keyboard" class="w-4 h-4 text-muted"></i>
+              <span class="text-[10px] text-muted">Manual</span>
+            </button>
+            <button class="card p-2 flex flex-col items-center gap-1">
+              <i data-lucide="file-text" class="w-4 h-4 text-muted"></i>
+              <span class="text-[10px] text-muted">PDF</span>
+            </button>
+          </div>
+
+          <!-- Foto detectada -->
+          <div class="card p-3 mb-3 flex items-center gap-3 bg-accent/5 border-accent/30">
+            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-accent2 to-accent flex items-center justify-center">
+              <i data-lucide="receipt" class="w-6 h-6 text-bg"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs text-accent font-semibold uppercase tracking-wider">IA leu</div>
+              <div class="text-sm font-medium">Posto Shell · 23/04/26</div>
+              <div class="text-xs text-muted">Combustível · NF nº 8472</div>
+            </div>
+            <i data-lucide="check-circle-2" class="w-5 h-5 text-accent"></i>
+          </div>
+
+          <!-- Campos extraídos -->
+          <div class="space-y-3 mb-4">
+            <div>
+              <div class="label mb-1">Valor</div>
+              <div class="card p-3 text-2xl font-bold mono text-danger">- R$ 287,50</div>
+            </div>
+            <div>
+              <div class="label mb-1">Categoria sugerida</div>
+              <div class="card p-3 flex items-center gap-2">
+                <span class="pill bg-warn/15 text-warn">⛽ Combustível</span>
+                <span class="text-xs text-muted ml-auto">trocar →</span>
+              </div>
+            </div>
+            <div>
+              <div class="label mb-1">Cliente / Projeto</div>
+              <div class="card p-3 text-sm text-muted">Nenhum · vincular?</div>
+            </div>
+            <div>
+              <div class="label mb-1">Forma de pagamento</div>
+              <div class="card p-3 flex items-center gap-2">
+                <i data-lucide="credit-card" class="w-4 h-4 text-blue"></i>
+                <span class="text-sm">Cartão Itaú · final 4321</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline integridade visual -->
+          <div class="card p-3 mb-4">
+            <div class="text-xs text-muted mb-2">Validação · pipeline cérebro</div>
+            <div class="grid grid-cols-5 gap-1">
+              <div class="h-1.5 rounded bg-ok"></div>
+              <div class="h-1.5 rounded bg-ok"></div>
+              <div class="h-1.5 rounded bg-ok"></div>
+              <div class="h-1.5 rounded bg-ok"></div>
+              <div class="h-1.5 rounded bg-line"></div>
+            </div>
+            <div class="mt-2 flex items-center justify-between text-[10px] text-muted">
+              <span>schema ✓</span>
+              <span>dedup ✓</span>
+              <span>permissão ✓</span>
+              <span>coerência ✓</span>
+              <span>auditoria...</span>
+            </div>
+          </div>
+
+          <button class="w-full py-3.5 rounded-xl bg-accent text-bg font-bold text-base flex items-center justify-center gap-2">
+            <i data-lucide="check" class="w-5 h-5"></i> Salvar movimentação
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span>2.</span> Foto recibo → IA classifica → 1 toque</div>
+  </div>
+
+  <!-- ============== TELA 3: IA CHAT ============== -->
+  <div>
+    <div class="iphone">
+      <div class="iphone-screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="flex items-center gap-1">
+            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+            <i data-lucide="battery-full" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <div class="screen-content px-5">
+          <!-- Header -->
+          <div class="pt-4 pb-3 flex items-center gap-3">
+            <button class="p-2 rounded-full bg-panel border border-line">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <div class="flex-1">
+              <div class="font-bold text-base flex items-center gap-2">
+                <i data-lucide="bot" class="w-5 h-5 text-accent"></i> Cérebro IA
+              </div>
+              <div class="text-xs text-muted">5 agentes · cruzando 8 fontes</div>
+            </div>
+          </div>
+
+          <!-- Sugestões rápidas -->
+          <div class="flex gap-2 overflow-x-auto py-2 mb-3 scroll-thin">
+            <button class="shrink-0 px-3 py-1.5 rounded-full bg-panel border border-line text-xs">Como tá o caixa?</button>
+            <button class="shrink-0 px-3 py-1.5 rounded-full bg-panel border border-line text-xs">Quem deve quanto?</button>
+            <button class="shrink-0 px-3 py-1.5 rounded-full bg-panel border border-line text-xs">Resumo da semana</button>
+            <button class="shrink-0 px-3 py-1.5 rounded-full bg-panel border border-line text-xs">Faturei mais que mês passado?</button>
+          </div>
+
+          <!-- Mensagens -->
+          <div class="space-y-3 mb-4">
+            <div class="flex justify-end">
+              <div class="max-w-[80%] bg-accent text-bg rounded-2xl rounded-br-sm px-3.5 py-2.5 text-sm">
+                Quanto eu faturei este mês e qual cliente puxou mais?
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <div class="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-bg text-xs font-bold shrink-0">C</div>
+              <div class="flex-1 max-w-[85%]">
+                <div class="bg-panel border border-line rounded-2xl rounded-tl-sm px-3.5 py-3 text-sm">
+                  <div class="text-base font-bold mb-1">R$ 78.420,00 em abril 📈</div>
+                  <div class="text-xs text-muted mb-3">+12% vs. março · meta R$ 80k a 2 dias</div>
+
+                  <div class="bg-panel2 rounded-lg p-2.5 mb-2">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-semibold">🥇 Cliente A</span>
+                      <span class="text-accent font-bold">R$ 32.500</span>
+                    </div>
+                    <div class="text-[10px] text-muted mt-0.5">3 projetos · 41% do faturamento</div>
+                  </div>
+                  <div class="bg-panel2 rounded-lg p-2.5 mb-2">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-semibold">🥈 Cliente B</span>
+                      <span class="text-accent font-bold">R$ 18.200</span>
+                    </div>
+                  </div>
+                  <div class="bg-panel2 rounded-lg p-2.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-semibold">🥉 Marketplace</span>
+                      <span class="text-accent font-bold">R$ 14.300</span>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 pt-3 border-t border-line text-xs text-muted">
+                    via <span class="mono text-violet">dba</span> + <span class="mono text-violet">planejador</span> · cruzou banco-extrato + vendas.xlsx + NFs · 1.4s
+                  </div>
+                </div>
+                <button class="text-xs text-accent mt-2 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10">
+                  📊 ver detalhamento
+                </button>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <div class="max-w-[80%] bg-accent text-bg rounded-2xl rounded-br-sm px-3.5 py-2.5 text-sm">
+                Manda boleto de cobrança pro cliente A do que ainda falta.
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <div class="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-bg text-xs font-bold shrink-0">C</div>
+              <div class="flex-1 max-w-[85%]">
+                <div class="bg-panel border border-line rounded-2xl rounded-tl-sm px-3.5 py-3 text-sm">
+                  Cliente A tem <span class="font-bold text-warn">R$ 8.500</span> em aberto desde 18/04 (5 dias).
+                  <div class="mt-2 flex gap-1.5">
+                    <button class="px-3 py-1.5 rounded-lg bg-accent text-bg text-xs font-semibold">Gerar boleto</button>
+                    <button class="px-3 py-1.5 rounded-lg bg-panel2 border border-line text-xs">WhatsApp</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input -->
+          <div class="sticky bottom-24 left-0 right-0 -mx-5 px-5">
+            <div class="card p-2 flex items-center gap-2">
+              <button class="p-2 text-muted"><i data-lucide="paperclip" class="w-4 h-4"></i></button>
+              <input type="text" placeholder="Pergunte qualquer coisa..." class="flex-1 bg-transparent text-sm placeholder:text-muted focus:outline-none" />
+              <button class="p-2 text-muted"><i data-lucide="mic" class="w-4 h-4"></i></button>
+              <button class="w-9 h-9 rounded-full bg-accent text-bg flex items-center justify-center"><i data-lucide="send-horizontal" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div class="bottom-nav">
+          <button class="nav-btn">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            <span>Início</span>
+          </button>
+          <button class="nav-btn">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+            <span>Caixa</span>
+          </button>
+          <button class="nav-btn fab">
+            <i data-lucide="plus" class="w-7 h-7"></i>
+          </button>
+          <button class="nav-btn active">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+            <span>IA</span>
+          </button>
+          <button class="nav-btn">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+            <span>Mais</span>
+          </button>
+        </div>
+
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+    <div class="phone-label"><span>3.</span> IA cruza tudo · sugere ação</div>
+  </div>
+
+</div>
+
+<!-- Princípios -->
+<div class="max-w-5xl mx-auto px-6 py-12">
+  <div class="text-center mb-8">
+    <h2 class="text-2xl font-bold">Princípios mobile pro empresário</h2>
+    <p class="text-muted mt-2">Decisões de design que diferenciam de Conta Azul / Omie / planilha</p>
+  </div>
+  <div class="grid grid-cols-3 gap-4">
+    <div class="card p-5">
+      <div class="w-10 h-10 rounded-lg bg-accent/15 text-accent flex items-center justify-center mb-3">
+        <i data-lucide="zap" class="w-5 h-5"></i>
+      </div>
+      <div class="font-bold mb-1">3 toques pra qualquer ação</div>
+      <div class="text-sm text-muted">Lançar, cobrar, ver caixa — sem afundar em menu.</div>
+    </div>
+    <div class="card p-5">
+      <div class="w-10 h-10 rounded-lg bg-accent2/15 text-accent2 flex items-center justify-center mb-3">
+        <i data-lucide="camera" class="w-5 h-5"></i>
+      </div>
+      <div class="font-bold mb-1">Foto, voz ou WhatsApp</div>
+      <div class="text-sm text-muted">A IA classifica e o pipeline valida antes de salvar.</div>
+    </div>
+    <div class="card p-5">
+      <div class="w-10 h-10 rounded-lg bg-violet/15 text-violet flex items-center justify-center mb-3">
+        <i data-lucide="bot" class="w-5 h-5"></i>
+      </div>
+      <div class="font-bold mb-1">IA que sugere ação</div>
+      <div class="text-sm text-muted">Não só responde — gera boleto, manda cobrança, lança parcela.</div>
+    </div>
+    <div class="card p-5">
+      <div class="w-10 h-10 rounded-lg bg-blue/15 text-blue flex items-center justify-center mb-3">
+        <i data-lucide="wifi-off" class="w-5 h-5"></i>
+      </div>
+      <div class="font-bold mb-1">Funciona offline</div>
+      <div class="text-sm text-muted">PWA com IndexedDB. Sincroniza quando voltar a internet.</div>
+    </div>
+    <div class="card p-5">
+      <div class="w-10 h-10 rounded-lg bg-warn/15 text-warn flex items-center justify-center mb-3">
+        <i data-lucide="users" class="w-5 h-5"></i>
+      </div>
+      <div class="font-bold mb-1">Permissão por papel</div>
+      <div class="text-sm text-muted">Sócio vê tudo. Funcionário só lança o que pode.</div>
+    </div>
+    <div class="card p-5">
+      <div class="w-10 h-10 rounded-lg bg-pink/15 text-danger flex items-center justify-center mb-3">
+        <i data-lucide="bell" class="w-5 h-5"></i>
+      </div>
+      <div class="font-bold mb-1">Push só do que importa</div>
+      <div class="text-sm text-muted">Boleto vence, cliente atrasa, meta bate — sem barulho.</div>
+    </div>
+  </div>
+
+  <div class="text-center mt-12 text-sm text-muted">
+    Cérebro · mobile pro empresário · PWA iOS+Android ·
+    <a class="text-accent hover:underline" href="prototipo-v2.html">v2 desktop</a> ·
+    <a class="text-accent hover:underline" href="prototipo-v3.html">v3 universal</a>
+  </div>
+</div>
+
+<script> lucide.createIcons(); </script>
+</body>
+</html>

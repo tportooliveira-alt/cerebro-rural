@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cérebro — Painel Universal de Dados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+            mono: ['JetBrains Mono', 'ui-monospace'],
+          },
+          colors: {
+            bg:      '#0a0b10',
+            panel:   '#13141c',
+            panel2:  '#191b25',
+            line:    '#262834',
+            ink:     '#e6e8f0',
+            muted:   '#7a8094',
+            accent:  '#818cf8',  // indigo
+            accent2: '#22d3ee',  // cyan
+            ok:      '#34d399',
+            warn:    '#fbbf24',
+            danger:  '#fb7185',
+            violet:  '#c084fc',
+            pink:    '#f472b6',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace; }
+    .grid-bg {
+      background-image:
+        radial-gradient(circle at 15% 0%, rgba(129,140,248,0.10), transparent 35%),
+        radial-gradient(circle at 85% 100%, rgba(34,211,238,0.08), transparent 35%);
+    }
+    .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: #262834; border-radius: 3px; }
+    .pill { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+    .nav-item.active { background: linear-gradient(90deg, rgba(129,140,248,0.14), transparent); border-left: 2px solid #818cf8; }
+    .pulse-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .block-card {
+      background: linear-gradient(180deg, #13141c, #11121a);
+      border: 1px solid #262834;
+      border-radius: 16px;
+      transition: all 0.15s ease;
+    }
+    .block-card:hover { border-color: #353849; box-shadow: 0 8px 24px -8px rgba(129,140,248,0.15); }
+    .source-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 6px; border-radius: 6px;
+      background: rgba(129,140,248,0.08); color: #818cf8;
+      font-size: 10px; font-family: 'JetBrains Mono', ui-monospace;
+      border: 1px solid rgba(129,140,248,0.2);
+    }
+    .drag-handle { cursor: grab; opacity: 0; transition: opacity 0.15s; }
+    .block-card:hover .drag-handle { opacity: 1; }
+    .grid-canvas {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .col-span-3 { grid-column: span 3; }
+    .col-span-4 { grid-column: span 4; }
+    .col-span-6 { grid-column: span 6; }
+    .col-span-8 { grid-column: span 8; }
+    .col-span-12 { grid-column: span 12; }
+    .gradient-border {
+      position: relative;
+    }
+    .gradient-border::before {
+      content: ''; position: absolute; inset: 0;
+      padding: 1px; border-radius: inherit;
+      background: linear-gradient(135deg, #818cf8, #22d3ee, transparent);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      pointer-events: none;
+    }
+    /* Ask bar fab */
+    .ask-fab {
+      position: fixed; bottom: 24px; right: 24px; z-index: 30;
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body class="bg-bg text-ink min-h-screen grid-bg">
+
+<div class="flex min-h-screen">
+
+  <!-- ============== SIDEBAR ============== -->
+  <aside class="w-72 shrink-0 border-r border-line bg-panel/70 backdrop-blur sticky top-0 h-screen overflow-y-auto scroll-thin">
+    <div class="p-5 border-b border-line">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-bg font-bold text-lg">C</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-base leading-tight">Cérebro</div>
+          <div class="text-xs text-muted">painel universal de dados</div>
+        </div>
+      </div>
+      <button class="mt-4 w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-panel2 border border-line text-sm hover:border-accent/40">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layers" class="w-4 h-4 text-accent"></i>
+          <span>Workspace pessoal</span>
+        </div>
+        <i data-lucide="chevrons-up-down" class="w-4 h-4 text-muted"></i>
+      </button>
+    </div>
+
+    <!-- Workspaces -->
+    <nav class="p-3 space-y-1">
+      <div class="px-3 py-2 text-[10px] uppercase tracking-widest text-muted font-semibold flex items-center justify-between">
+        <span>Espaços</span>
+        <i data-lucide="plus" class="w-3.5 h-3.5 cursor-pointer hover:text-ink"></i>
+      </div>
+      <a class="nav-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Visão única
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="wallet" class="w-4 h-4"></i> Finanças
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="briefcase" class="w-4 h-4"></i> Projetos
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="book-open" class="w-4 h-4"></i> Estudos
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="heart-pulse" class="w-4 h-4"></i> Saúde
+      </a>
+    </nav>
+
+    <!-- Fontes conectadas -->
+    <nav class="p-3 space-y-1 border-t border-line mt-2">
+      <div class="px-3 py-2 text-[10px] uppercase tracking-widest text-muted font-semibold flex items-center justify-between">
+        <span>Fontes conectadas</span>
+        <span class="normal-case tracking-normal text-xs text-muted">8</span>
+      </div>
+      <div id="sources" class="space-y-1"></div>
+      <button class="w-full mt-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm border border-dashed border-line hover:border-accent/50 hover:bg-accent/5 text-muted hover:text-accent">
+        <i data-lucide="plus" class="w-4 h-4"></i> Adicionar fonte
+      </button>
+    </nav>
+
+    <!-- Engine -->
+    <nav class="p-3 space-y-1 border-t border-line mt-2">
+      <div class="px-3 py-2 text-[10px] uppercase tracking-widest text-muted font-semibold flex items-center justify-between">
+        <span>Engine</span>
+        <span class="flex items-center gap-1 text-ok normal-case tracking-normal text-xs">
+          <span class="w-2 h-2 rounded-full bg-ok pulse-dot"></span>online
+        </span>
+      </div>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="plug-zap" class="w-4 h-4"></i> Plugins<span class="ml-auto text-xs text-muted">2</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="server" class="w-4 h-4"></i> MCPs<span class="ml-auto text-xs text-muted">6</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="brain-circuit" class="w-4 h-4"></i> Agentes<span class="ml-auto text-xs text-muted">5</span>
+      </a>
+      <a class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+        <i data-lucide="shield-check" class="w-4 h-4"></i> Auditoria
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-line mt-2">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet to-pink flex items-center justify-center text-bg font-bold text-sm">T</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">Thiago</div>
+          <div class="text-xs text-muted truncate">plano free · 3/5 fontes</div>
+        </div>
+        <i data-lucide="settings" class="w-4 h-4 text-muted hover:text-ink cursor-pointer"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============== MAIN ============== -->
+  <main class="flex-1 min-w-0">
+
+    <!-- Topbar -->
+    <header class="sticky top-0 z-20 bg-bg/80 backdrop-blur border-b border-line">
+      <div class="flex items-center gap-4 px-6 py-3">
+        <div>
+          <div class="text-xs text-muted">Visão única · todos os seus dados, uma tela</div>
+          <div class="text-base font-semibold flex items-center gap-2">
+            <span class="bg-gradient-to-r from-accent to-accent2 bg-clip-text text-transparent">Painel pessoal</span>
+            <i data-lucide="sparkles" class="w-4 h-4 text-accent"></i>
+          </div>
+        </div>
+        <div class="flex-1 max-w-xl ml-6">
+          <div class="relative">
+            <i data-lucide="sparkles" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-accent"></i>
+            <input type="text" placeholder='Pergunte qualquer coisa: "quanto gastei com Uber em março?" · "tarefas atrasadas?" · "resume o PDF X"'
+              class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-panel2 border border-line text-sm placeholder:text-muted focus:outline-none focus:border-accent/60" />
+          </div>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <button class="px-3 py-2 rounded-lg bg-panel2 border border-line hover:border-accent/40 text-sm flex items-center gap-2">
+            <i data-lucide="filter" class="w-4 h-4"></i> Filtrar
+          </button>
+          <button class="px-3 py-2 rounded-lg bg-accent/10 border border-accent/30 text-accent text-sm font-medium hover:bg-accent/20 flex items-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> Adicionar bloco
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="px-6 py-6 max-w-[1500px]">
+
+      <!-- ============== Banner conceito ============== -->
+      <div class="mb-6 p-5 gradient-border rounded-2xl bg-panel relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-48 h-48 bg-accent/10 rounded-full blur-3xl"></div>
+        <div class="relative flex items-center gap-5">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent2 flex items-center justify-center">
+            <i data-lucide="layers-3" class="w-6 h-6 text-bg"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-base font-semibold">Conecte qualquer fonte. Veja tudo numa tela só.</div>
+            <div class="text-sm text-muted mt-0.5">Planilha, PDF, banco, API, foto, GitHub, Postgres, Notion — qualquer plugin vira bloco arrastável aqui.</div>
+          </div>
+          <button class="px-4 py-2 rounded-lg bg-accent text-bg text-sm font-semibold hover:bg-accent/90 flex items-center gap-2">
+            <i data-lucide="plug" class="w-4 h-4"></i> Ver catálogo
+          </button>
+        </div>
+      </div>
+
+      <!-- ============== KPIs (cross-source) ============== -->
+      <div class="grid-canvas mb-6">
+        <div class="col-span-3 block-card p-4">
+          <div class="flex items-start justify-between">
+            <div class="text-xs text-muted">Saldo unificado</div>
+            <span class="source-chip"><i data-lucide="database" class="w-3 h-3"></i>3 fontes</span>
+          </div>
+          <div class="mt-2 text-2xl font-bold">R$ 28.430</div>
+          <div class="text-xs text-ok mt-1">▲ 8% mês</div>
+        </div>
+        <div class="col-span-3 block-card p-4">
+          <div class="flex items-start justify-between">
+            <div class="text-xs text-muted">Tarefas abertas</div>
+            <span class="source-chip"><i data-lucide="github" class="w-3 h-3"></i>github</span>
+          </div>
+          <div class="mt-2 text-2xl font-bold">17 <span class="text-base text-warn">3 atrasadas</span></div>
+          <div class="text-xs text-muted mt-1">5 projetos · 2 repos</div>
+        </div>
+        <div class="col-span-3 block-card p-4">
+          <div class="flex items-start justify-between">
+            <div class="text-xs text-muted">Documentos lidos</div>
+            <span class="source-chip"><i data-lucide="file-text" class="w-3 h-3"></i>plugin docs</span>
+          </div>
+          <div class="mt-2 text-2xl font-bold">42 <span class="text-base text-muted">arquivos</span></div>
+          <div class="text-xs text-muted mt-1">PDF · xlsx · csv · imagens</div>
+        </div>
+        <div class="col-span-3 block-card p-4">
+          <div class="flex items-start justify-between">
+            <div class="text-xs text-muted">Hábitos hoje</div>
+            <span class="source-chip"><i data-lucide="heart-pulse" class="w-3 h-3"></i>health</span>
+          </div>
+          <div class="mt-2 text-2xl font-bold">4/6</div>
+          <div class="text-xs text-ok mt-1">streak 12 dias</div>
+        </div>
+      </div>
+
+      <!-- ============== Bloco principal: tabela universal ============== -->
+      <div class="grid-canvas mb-6">
+
+        <!-- Tabela cross-source (lançamentos vindos de TODAS as fontes) -->
+        <div class="col-span-8 block-card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="table-2" class="w-4 h-4 text-accent"></i>
+                <div class="text-sm font-semibold">Movimentações · todas as fontes</div>
+                <span class="source-chip"><i data-lucide="combine" class="w-3 h-3"></i>4 fontes unidas</span>
+              </div>
+              <div class="text-xs text-muted mt-0.5">edição inline · clique em qualquer célula</div>
+            </div>
+            <div class="flex gap-1.5">
+              <button class="p-1.5 rounded-lg hover:bg-panel2"><i data-lucide="grip-vertical" class="w-4 h-4 drag-handle text-muted"></i></button>
+              <button class="p-1.5 rounded-lg hover:bg-panel2"><i data-lucide="settings-2" class="w-4 h-4 text-muted"></i></button>
+              <button class="p-1.5 rounded-lg hover:bg-panel2"><i data-lucide="more-horizontal" class="w-4 h-4 text-muted"></i></button>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg border border-line">
+            <table class="w-full text-sm">
+              <thead class="bg-panel2 text-xs uppercase text-muted">
+                <tr>
+                  <th class="text-left px-3 py-2 font-medium w-8"><input type="checkbox" class="accent-accent"/></th>
+                  <th class="text-left px-3 py-2 font-medium">Data</th>
+                  <th class="text-left px-3 py-2 font-medium">Descrição</th>
+                  <th class="text-left px-3 py-2 font-medium">Categoria</th>
+                  <th class="text-right px-3 py-2 font-medium">Valor</th>
+                  <th class="text-left px-3 py-2 font-medium">Fonte</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line">
+                <tr class="hover:bg-panel2/40 group">
+                  <td class="px-3 py-2"><input type="checkbox" class="accent-accent"/></td>
+                  <td class="px-3 py-2 mono text-xs">23/04</td>
+                  <td class="px-3 py-2">Almoço Outback</td>
+                  <td class="px-3 py-2"><span class="pill bg-violet/15 text-violet">Alimentação</span></td>
+                  <td class="px-3 py-2 text-right text-danger mono">-R$ 142,00</td>
+                  <td class="px-3 py-2"><span class="source-chip"><i data-lucide="camera" class="w-3 h-3"></i>foto-recibo</span></td>
+                </tr>
+                <tr class="hover:bg-panel2/40 group">
+                  <td class="px-3 py-2"><input type="checkbox" class="accent-accent"/></td>
+                  <td class="px-3 py-2 mono text-xs">23/04</td>
+                  <td class="px-3 py-2">Salário freela cliente A</td>
+                  <td class="px-3 py-2"><span class="pill bg-ok/15 text-ok">Receita</span></td>
+                  <td class="px-3 py-2 text-right text-ok mono">+R$ 4.500,00</td>
+                  <td class="px-3 py-2"><span class="source-chip"><i data-lucide="banknote" class="w-3 h-3"></i>banco-extrato</span></td>
+                </tr>
+                <tr class="hover:bg-panel2/40 group">
+                  <td class="px-3 py-2"><input type="checkbox" class="accent-accent"/></td>
+                  <td class="px-3 py-2 mono text-xs">22/04</td>
+                  <td class="px-3 py-2">Uber Pool centro</td>
+                  <td class="px-3 py-2"><span class="pill bg-pink/15 text-pink">Transporte</span></td>
+                  <td class="px-3 py-2 text-right text-danger mono">-R$ 18,40</td>
+                  <td class="px-3 py-2"><span class="source-chip"><i data-lucide="mail" class="w-3 h-3"></i>gmail-bot</span></td>
+                </tr>
+                <tr class="hover:bg-panel2/40 group">
+                  <td class="px-3 py-2"><input type="checkbox" class="accent-accent"/></td>
+                  <td class="px-3 py-2 mono text-xs">22/04</td>
+                  <td class="px-3 py-2">Vendas marketplace</td>
+                  <td class="px-3 py-2"><span class="pill bg-ok/15 text-ok">Receita</span></td>
+                  <td class="px-3 py-2 text-right text-ok mono">+R$ 1.230,00</td>
+                  <td class="px-3 py-2"><span class="source-chip"><i data-lucide="file-spreadsheet" class="w-3 h-3"></i>vendas.xlsx</span></td>
+                </tr>
+                <tr class="hover:bg-panel2/40 group">
+                  <td class="px-3 py-2"><input type="checkbox" class="accent-accent"/></td>
+                  <td class="px-3 py-2 mono text-xs">21/04</td>
+                  <td class="px-3 py-2">Conta luz Enel</td>
+                  <td class="px-3 py-2"><span class="pill bg-accent2/15 text-accent2">Casa</span></td>
+                  <td class="px-3 py-2 text-right text-danger mono">-R$ 287,30</td>
+                  <td class="px-3 py-2"><span class="source-chip"><i data-lucide="file-text" class="w-3 h-3"></i>boleto.pdf</span></td>
+                </tr>
+                <tr class="hover:bg-panel2/40 group bg-warn/5">
+                  <td class="px-3 py-2"><input type="checkbox" class="accent-accent"/></td>
+                  <td class="px-3 py-2 mono text-xs">21/04</td>
+                  <td class="px-3 py-2 text-muted italic">Pix recebido — sem descrição</td>
+                  <td class="px-3 py-2"><span class="pill bg-warn/15 text-warn">Precisa revisão</span></td>
+                  <td class="px-3 py-2 text-right text-ok mono">+R$ 350,00</td>
+                  <td class="px-3 py-2"><span class="source-chip"><i data-lucide="banknote" class="w-3 h-3"></i>banco-extrato</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-between items-center mt-3 text-xs text-muted">
+            <span>6 de 1.247 lançamentos · filtrados últimos 7 dias</span>
+            <button class="text-accent hover:underline">ver tudo →</button>
+          </div>
+        </div>
+
+        <!-- Bloco fontes ativas (sidebar de status detalhado) -->
+        <div class="col-span-4 block-card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="plug" class="w-4 h-4 text-accent2"></i>
+            <div class="text-sm font-semibold">Fontes ativas</div>
+            <span class="ml-auto pill bg-ok/15 text-ok">8 conectadas</span>
+          </div>
+          <div class="space-y-2.5" id="sources-detail"></div>
+          <button class="mt-3 w-full py-2 rounded-lg border border-dashed border-line hover:border-accent/40 text-xs text-muted hover:text-accent">
+            + conectar nova fonte
+          </button>
+        </div>
+      </div>
+
+      <!-- ============== Linha: Gráfico + Kanban + Calendário ============== -->
+      <div class="grid-canvas mb-6">
+
+        <!-- Gráfico fluxo -->
+        <div class="col-span-6 block-card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 text-accent"></i>
+                <div class="text-sm font-semibold">Fluxo · 30 dias</div>
+                <span class="source-chip"><i data-lucide="combine" class="w-3 h-3"></i>todas as fontes</span>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <button class="text-xs px-2 py-1 rounded bg-accent/10 text-accent border border-accent/30">30d</button>
+              <button class="text-xs px-2 py-1 rounded bg-panel2 text-muted">90d</button>
+              <button class="text-xs px-2 py-1 rounded bg-panel2 text-muted">12m</button>
+            </div>
+          </div>
+          <svg viewBox="0 0 600 160" class="w-full h-40">
+            <defs>
+              <linearGradient id="gIn" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#34d399" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="gOut" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#fb7185" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#fb7185" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g stroke="#262834" stroke-dasharray="2 4">
+              <line x1="0" y1="40" x2="600" y2="40"/>
+              <line x1="0" y1="80" x2="600" y2="80"/>
+              <line x1="0" y1="120" x2="600" y2="120"/>
+            </g>
+            <path d="M0,120 C50,100 100,70 150,80 C200,90 250,50 300,55 C350,60 400,80 450,65 C500,50 550,30 600,40 L600,160 L0,160 Z" fill="url(#gIn)"/>
+            <path d="M0,120 C50,100 100,70 150,80 C200,90 250,50 300,55 C350,60 400,80 450,65 C500,50 550,30 600,40" fill="none" stroke="#34d399" stroke-width="2"/>
+            <path d="M0,135 C50,128 100,115 150,120 C200,125 250,108 300,112 C350,115 400,120 450,116 C500,113 550,124 600,118 L600,160 L0,160 Z" fill="url(#gOut)"/>
+            <path d="M0,135 C50,128 100,115 150,120 C200,125 250,108 300,112 C350,115 400,120 450,116 C500,113 550,124 600,118" fill="none" stroke="#fb7185" stroke-width="2" stroke-dasharray="3 3"/>
+          </svg>
+          <div class="flex gap-4 text-xs text-muted">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-ok"></span>Entradas</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-danger"></span>Saídas</span>
+            <span class="ml-auto">cruzando 4 fontes em tempo real</span>
+          </div>
+        </div>
+
+        <!-- Kanban projetos -->
+        <div class="col-span-6 block-card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="kanban-square" class="w-4 h-4 text-accent2"></i>
+              <div class="text-sm font-semibold">Tarefas em andamento</div>
+              <span class="source-chip"><i data-lucide="github" class="w-3 h-3"></i>github · linear</span>
+            </div>
+            <button class="text-xs text-muted hover:text-accent">expandir →</button>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <div class="text-xs uppercase tracking-wider text-muted mb-2 flex items-center justify-between">
+                <span>A fazer</span><span>5</span>
+              </div>
+              <div class="space-y-2">
+                <div class="bg-panel2 rounded-lg p-2.5 border border-line text-xs">
+                  <div class="font-medium">Migrar audit pra Supabase</div>
+                  <div class="flex items-center gap-1 mt-1.5 text-muted text-[10px]"><i data-lucide="github" class="w-3 h-3"></i>cerebro #14</div>
+                </div>
+                <div class="bg-panel2 rounded-lg p-2.5 border border-line text-xs">
+                  <div class="font-medium">Bot WhatsApp</div>
+                  <div class="flex items-center gap-1 mt-1.5 text-warn text-[10px]"><i data-lucide="clock" class="w-3 h-3"></i>vence amanhã</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="text-xs uppercase tracking-wider text-muted mb-2 flex items-center justify-between">
+                <span>Fazendo</span><span>3</span>
+              </div>
+              <div class="space-y-2">
+                <div class="bg-panel2 rounded-lg p-2.5 border border-line border-l-2 border-l-accent text-xs">
+                  <div class="font-medium">Plugin docs OCR</div>
+                  <div class="flex items-center gap-1 mt-1.5 text-muted text-[10px]"><i data-lucide="user" class="w-3 h-3"></i>Thiago</div>
+                </div>
+                <div class="bg-panel2 rounded-lg p-2.5 border border-line border-l-2 border-l-accent text-xs">
+                  <div class="font-medium">Schema Supabase</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="text-xs uppercase tracking-wider text-muted mb-2 flex items-center justify-between">
+                <span>Pronto</span><span>9</span>
+              </div>
+              <div class="space-y-2">
+                <div class="bg-panel2 rounded-lg p-2.5 border border-line border-l-2 border-l-ok text-xs opacity-70">
+                  <div class="font-medium line-through">Adaptador Go gRPC</div>
+                </div>
+                <div class="bg-panel2 rounded-lg p-2.5 border border-line border-l-2 border-l-ok text-xs opacity-70">
+                  <div class="font-medium line-through">Plugin docs xlsx</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============== Linha: Documentos + Calendário + Hábitos ============== -->
+      <div class="grid-canvas mb-6">
+
+        <!-- Documentos lidos -->
+        <div class="col-span-4 block-card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="file-stack" class="w-4 h-4 text-violet"></i>
+            <div class="text-sm font-semibold">Docs processados</div>
+            <span class="source-chip"><i data-lucide="folder" class="w-3 h-3"></i>plugin docs</span>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-panel2 cursor-pointer">
+              <div class="w-8 h-8 rounded bg-ok/10 text-ok flex items-center justify-center"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">vendas-março.xlsx</div>
+                <div class="text-xs text-muted">3 abas · 247 linhas · há 2h</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-panel2 cursor-pointer">
+              <div class="w-8 h-8 rounded bg-danger/10 text-danger flex items-center justify-center"><i data-lucide="file-text" class="w-4 h-4"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">contrato-cliente-A.pdf</div>
+                <div class="text-xs text-muted">12 páginas · resumido pela IA</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-panel2 cursor-pointer">
+              <div class="w-8 h-8 rounded bg-violet/10 text-violet flex items-center justify-center"><i data-lucide="image" class="w-4 h-4"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">recibo-restaurante.jpg</div>
+                <div class="text-xs text-muted">OCR · classificado em Alimentação</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-panel2 cursor-pointer">
+              <div class="w-8 h-8 rounded bg-accent/10 text-accent flex items-center justify-center"><i data-lucide="file-code" class="w-4 h-4"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">extrato-banco.csv</div>
+                <div class="text-xs text-muted">312 linhas · auto-importado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendário/Eventos -->
+        <div class="col-span-4 block-card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="calendar" class="w-4 h-4 text-accent2"></i>
+            <div class="text-sm font-semibold">Próximos eventos</div>
+            <span class="source-chip"><i data-lucide="calendar-clock" class="w-3 h-3"></i>google-calendar</span>
+          </div>
+          <div class="space-y-2.5">
+            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-panel2">
+              <div class="text-center shrink-0">
+                <div class="text-[10px] text-accent uppercase font-bold">hoje</div>
+                <div class="text-base font-bold">23</div>
+              </div>
+              <div class="flex-1 border-l-2 border-accent/40 pl-3">
+                <div class="text-sm font-medium">Reunião cliente A</div>
+                <div class="text-xs text-muted">14h · 1h · Google Meet</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-panel2">
+              <div class="text-center shrink-0">
+                <div class="text-[10px] text-muted uppercase font-bold">amanhã</div>
+                <div class="text-base font-bold">24</div>
+              </div>
+              <div class="flex-1 border-l-2 border-line pl-3">
+                <div class="text-sm font-medium">Boleto luz vence</div>
+                <div class="text-xs text-warn">R$ 287,30 · do PDF importado</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-panel2">
+              <div class="text-center shrink-0">
+                <div class="text-[10px] text-muted uppercase font-bold">qua</div>
+                <div class="text-base font-bold">26</div>
+              </div>
+              <div class="flex-1 border-l-2 border-line pl-3">
+                <div class="text-sm font-medium">Entrega projeto X</div>
+                <div class="text-xs text-muted">deadline · 3 issues abertas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hábitos / tracking -->
+        <div class="col-span-4 block-card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="activity" class="w-4 h-4 text-pink"></i>
+            <div class="text-sm font-semibold">Hábitos · semana</div>
+            <span class="source-chip"><i data-lucide="heart-pulse" class="w-3 h-3"></i>health</span>
+          </div>
+          <div class="space-y-2.5">
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span>Exercício</span><span class="text-muted text-xs">5/7</span></div>
+              <div class="grid grid-cols-7 gap-1">
+                <div class="h-7 rounded bg-ok/40"></div>
+                <div class="h-7 rounded bg-ok/40"></div>
+                <div class="h-7 rounded bg-line"></div>
+                <div class="h-7 rounded bg-ok/40"></div>
+                <div class="h-7 rounded bg-ok/40"></div>
+                <div class="h-7 rounded bg-line"></div>
+                <div class="h-7 rounded bg-ok"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span>Leitura</span><span class="text-muted text-xs">7/7 🔥</span></div>
+              <div class="grid grid-cols-7 gap-1">
+                <div class="h-7 rounded bg-violet/40"></div>
+                <div class="h-7 rounded bg-violet/40"></div>
+                <div class="h-7 rounded bg-violet/40"></div>
+                <div class="h-7 rounded bg-violet/40"></div>
+                <div class="h-7 rounded bg-violet/40"></div>
+                <div class="h-7 rounded bg-violet/40"></div>
+                <div class="h-7 rounded bg-violet"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span>Hidratação</span><span class="text-muted text-xs">3/7</span></div>
+              <div class="grid grid-cols-7 gap-1">
+                <div class="h-7 rounded bg-accent2/40"></div>
+                <div class="h-7 rounded bg-line"></div>
+                <div class="h-7 rounded bg-accent2/40"></div>
+                <div class="h-7 rounded bg-line"></div>
+                <div class="h-7 rounded bg-line"></div>
+                <div class="h-7 rounded bg-line"></div>
+                <div class="h-7 rounded bg-accent2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============== Engine + Auditoria ============== -->
+      <div class="grid-canvas mb-6">
+        <div class="col-span-8 block-card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="activity" class="w-4 h-4 text-accent"></i>
+            <div class="text-sm font-semibold">Pipeline de integridade · stream ao vivo</div>
+            <span class="ml-auto text-xs text-muted">5 etapas: schema → idempotência → permissões → coerência → audit</span>
+          </div>
+          <div class="mono text-[11px] leading-relaxed bg-bg rounded-lg p-3 border border-line overflow-x-auto scroll-thin space-y-0.5">
+            <div><span class="text-muted">12:42:01</span> <span class="text-accent">[accepted]</span> docs.read source=vendas.xlsx tenant=t1 · 247 linhas</div>
+            <div><span class="text-muted">12:42:02</span> <span class="text-accent">[completed]</span> docs.read ok=true sheets=3 → tabela movimentações</div>
+            <div><span class="text-muted">12:42:14</span> <span class="text-accent">[accepted]</span> mcp.fetch url=api.cliente-a.com tool=fetch</div>
+            <div><span class="text-muted">12:42:14</span> <span class="text-accent">[completed]</span> mcp.fetch ok=true → KPI atualizado</div>
+            <div><span class="text-muted">12:42:30</span> <span class="text-accent">[accepted]</span> manual.lancamento desc="Almoço Outback" valor=-142</div>
+            <div><span class="text-muted">12:42:30</span> <span class="text-warn">[rejected]</span> manual.lancamento step=schema "categoria: campo obrigatório ausente"</div>
+            <div><span class="text-muted">12:42:48</span> <span class="text-accent">[completed]</span> manual.lancamento ok=true categoria=Alimentação</div>
+            <div><span class="text-muted">12:43:02</span> <span class="text-accent">[completed]</span> agent.dba pergunta="quanto gastei com Uber em março?" R$ 247,80</div>
+          </div>
+        </div>
+
+        <div class="col-span-4 block-card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="brain-circuit" class="w-4 h-4 text-violet"></i>
+            <div class="text-sm font-semibold">Agentes disponíveis</div>
+            <span class="ml-auto text-xs text-muted">9 providers</span>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-panel2 text-sm"><span class="w-2 h-2 rounded-full bg-ok"></span><span class="font-medium mono">pesquisador</span><span class="ml-auto text-xs text-muted">groq</span></div>
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-panel2 text-sm"><span class="w-2 h-2 rounded-full bg-ok"></span><span class="font-medium mono">codista</span><span class="ml-auto text-xs text-muted">claude</span></div>
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-panel2 text-sm"><span class="w-2 h-2 rounded-full bg-ok"></span><span class="font-medium mono">dba</span><span class="ml-auto text-xs text-muted">openai</span></div>
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-panel2 text-sm"><span class="w-2 h-2 rounded-full bg-ok"></span><span class="font-medium mono">revisor-pr</span><span class="ml-auto text-xs text-muted">deepseek</span></div>
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-panel2 text-sm"><span class="w-2 h-2 rounded-full bg-ok"></span><span class="font-medium mono">planejador</span><span class="ml-auto text-xs text-muted">claude</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catálogo de plugins (CTA grande) -->
+      <div class="block-card p-6 gradient-border mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="store" class="w-5 h-5 text-accent2"></i>
+              <div class="text-base font-semibold">Catálogo de fontes</div>
+              <span class="pill bg-accent/15 text-accent">+30 disponíveis</span>
+            </div>
+            <div class="text-sm text-muted mt-0.5">qualquer fonte vira bloco aqui · 1 clique pra conectar</div>
+          </div>
+          <button class="text-sm text-accent hover:underline">ver tudo →</button>
+        </div>
+        <div class="grid grid-cols-6 gap-3" id="catalog"></div>
+      </div>
+
+      <footer class="text-xs text-muted text-center py-4 border-t border-line">
+        Cérebro · painel universal · adaptador Go (gRPC) + Supabase + React PWA ·
+        <a class="text-accent hover:underline" href="prototipo-v2.html">v2</a> ·
+        <a class="text-accent hover:underline" href="prototipo-dashboard.html">v1</a>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<!-- ============== ASK FAB (chat IA flutuante) ============== -->
+<div class="ask-fab">
+  <button class="px-4 py-3 rounded-full bg-accent text-bg font-semibold shadow-lg flex items-center gap-2 hover:bg-accent/90">
+    <i data-lucide="sparkles" class="w-4 h-4"></i> Perguntar à IA
+  </button>
+</div>
+
+<script>
+  // Fontes conectadas (sidebar)
+  const SOURCES = [
+    { name: 'banco-extrato',  icon: 'banknote',         color: 'text-ok' },
+    { name: 'vendas.xlsx',    icon: 'file-spreadsheet', color: 'text-accent' },
+    { name: 'gmail-bot',      icon: 'mail',             color: 'text-pink' },
+    { name: 'foto-recibo',    icon: 'camera',           color: 'text-violet' },
+    { name: 'github',         icon: 'github',           color: 'text-ink' },
+    { name: 'google-calendar',icon: 'calendar-clock',   color: 'text-accent2' },
+    { name: 'health',         icon: 'heart-pulse',      color: 'text-pink' },
+    { name: 'pasta-docs',     icon: 'folder',           color: 'text-warn' },
+  ];
+  document.getElementById('sources').innerHTML = SOURCES.map(s => `
+    <a class="nav-item flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm hover:bg-panel2 cursor-pointer">
+      <i data-lucide="${s.icon}" class="w-4 h-4 ${s.color}"></i>
+      <span class="flex-1 mono text-xs">${s.name}</span>
+      <span class="w-1.5 h-1.5 rounded-full bg-ok"></span>
+    </a>
+  `).join('');
+
+  // Detalhe das fontes (bloco)
+  const SOURCES_DETAIL = [
+    { name: 'banco-extrato',   type: 'API · Belvo',           rows: '1.247 lançamentos', icon: 'banknote',         color: 'ok' },
+    { name: 'vendas.xlsx',     type: 'planilha local',        rows: '247 linhas · 3 abas', icon: 'file-spreadsheet', color: 'accent' },
+    { name: 'gmail-bot',       type: 'MCP · gmail',           rows: '52 e-mails parseados', icon: 'mail',           color: 'pink' },
+    { name: 'foto-recibo',     type: 'plugin docs · OCR',     rows: '18 imagens',          icon: 'camera',         color: 'violet' },
+    { name: 'github',          type: 'MCP · github',          rows: '17 issues · 2 repos', icon: 'github',         color: 'ink' },
+    { name: 'google-calendar', type: 'MCP · google',          rows: '12 eventos próx.',    icon: 'calendar-clock', color: 'accent2' },
+  ];
+  document.getElementById('sources-detail').innerHTML = SOURCES_DETAIL.map(s => `
+    <div class="flex items-center gap-3 p-2.5 rounded-lg bg-panel2 border border-line">
+      <div class="w-8 h-8 rounded-lg bg-${s.color}/10 text-${s.color} flex items-center justify-center">
+        <i data-lucide="${s.icon}" class="w-4 h-4"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium mono truncate">${s.name}</div>
+        <div class="text-xs text-muted truncate">${s.type} · ${s.rows}</div>
+      </div>
+      <span class="w-1.5 h-1.5 rounded-full bg-ok shrink-0"></span>
+    </div>
+  `).join('');
+
+  // Catálogo
+  const CATALOG = [
+    { name: 'Planilha xlsx', icon: 'file-spreadsheet', tag: 'plugin docs' },
+    { name: 'PDF / Word',    icon: 'file-text',        tag: 'plugin docs' },
+    { name: 'CSV',           icon: 'file-code',        tag: 'plugin docs' },
+    { name: 'Foto / OCR',    icon: 'camera',           tag: 'plugin docs' },
+    { name: 'Postgres',      icon: 'database',         tag: 'MCP' },
+    { name: 'SQLite',        icon: 'database',         tag: 'MCP' },
+    { name: 'GitHub',        icon: 'github',           tag: 'MCP' },
+    { name: 'Gmail',         icon: 'mail',             tag: 'MCP' },
+    { name: 'Calendar',      icon: 'calendar-clock',   tag: 'MCP' },
+    { name: 'Notion',        icon: 'book-open',        tag: 'MCP' },
+    { name: 'Slack',         icon: 'message-square',   tag: 'MCP' },
+    { name: 'API REST',      icon: 'globe',            tag: 'MCP fetch' },
+    { name: 'Webhook',       icon: 'webhook',          tag: 'plugin' },
+    { name: 'Banco (Belvo)', icon: 'banknote',         tag: 'plugin' },
+    { name: 'WhatsApp',      icon: 'message-circle',   tag: 'plugin' },
+    { name: 'Custom Go',     icon: 'plug-zap',         tag: 'binary' },
+    { name: 'Custom Python', icon: 'plug-zap',         tag: 'script' },
+    { name: 'Remoto mTLS',   icon: 'shield',           tag: 'remote' },
+  ];
+  document.getElementById('catalog').innerHTML = CATALOG.map(c => `
+    <button class="block-card p-3 text-left hover:border-accent/40 transition group">
+      <div class="w-9 h-9 rounded-lg bg-panel2 flex items-center justify-center mb-2 group-hover:bg-accent/10 group-hover:text-accent">
+        <i data-lucide="${c.icon}" class="w-4 h-4"></i>
+      </div>
+      <div class="text-sm font-medium">${c.name}</div>
+      <div class="text-[10px] text-muted mono mt-0.5">${c.tag}</div>
+    </button>
+  `).join('');
+
+  lucide.createIcons();
+</script>
+</body>
+</html>
