@@ -49,14 +49,14 @@ SELECT
   peso_anterior,
   data_anterior,
   CASE
-    WHEN data_anterior IS NOT NULL AND (data - data_anterior) > 0
-    THEN ROUND(((peso_kg - peso_anterior)::numeric / (data - data_anterior)), 3)
+    WHEN data_anterior IS NOT NULL AND (data::date - data_anterior::date) > 0
+    THEN ROUND(((peso_kg - peso_anterior)::numeric / (data::date - data_anterior::date)), 3)
     ELSE NULL
   END AS gmd_kg_dia,
   ROUND((peso_kg / 30.0)::numeric, 2) AS arrobas_estimadas,
   CASE
-    WHEN data_anterior IS NOT NULL AND (data - data_anterior) > 0
-    THEN (data - data_anterior)
+    WHEN data_anterior IS NOT NULL AND (data::date - data_anterior::date) > 0
+    THEN (data::date - data_anterior::date)
     ELSE NULL
   END AS dias_entre_pesagens
 FROM pesagens_ordenadas;
@@ -210,10 +210,10 @@ SELECT
   t.carencia_carne_dias || ' dias de carência (carne)' AS mensagem,
   'critico' AS severidade
 FROM gado_tratamentos t
-JOIN gado_animais a ON a.id = t.animal_id
+LEFT JOIN gado_animais a ON a.id = t.animal_id
 LEFT JOIN gado_lotes l ON l.id = t.lote_id
 WHERE t.carencia_carne_ate >= CURRENT_DATE
-  AND a.status = 'ativo'
+  AND (t.animal_id IS NULL OR a.status = 'ativo')
 
 UNION ALL
 

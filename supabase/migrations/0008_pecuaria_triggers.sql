@@ -13,6 +13,7 @@ DECLARE
   v_tipo_lanc text;
   v_categoria text;
   v_subcategoria text;
+  v_lancamento_id uuid;
 BEGIN
   -- Só gera lançamento se confirmado
   IF NEW.status != 'confirmado' THEN
@@ -64,11 +65,12 @@ BEGIN
     'gado_movimentacoes_comerciais',
     'confirmado'
   )
-  RETURNING id INTO NEW.lancamento_id;
+  RETURNING id INTO v_lancamento_id;
 
-  -- Atualizar o campo lancamento_id na transação
-  -- (não dá pra fazer no BEFORE, fazemos UPDATE posterior)
-  PERFORM 1;  -- lancamento_id já atribuído via RETURNING
+  -- AFTER trigger: NEW já foi gravado, precisamos UPDATE explícito
+  UPDATE gado_movimentacoes_comerciais
+  SET lancamento_id = v_lancamento_id
+  WHERE id = NEW.id;
 
   RETURN NEW;
 END;
@@ -389,13 +391,16 @@ BEGIN
       WHERE movimentacao_id = NEW.id AND animal_id IS NOT NULL
     );
 
-    -- Atualizar quantidade do lote
-    UPDATE gado_lotes
-    SET quantidade = quantidade - NEW.quantidade_animais
-    WHERE id IN (
-      SELECT DISTINCT lote_id FROM gado_movimentacoes_comerciais_itens
+    -- Atualizar quantidade por lote (subtrai somente a qtd daquele lote)
+    UPDATE gado_lotes gl
+    SET quantidade = gl.quantidade - sub.qtd_vendida
+    FROM (
+      SELECT lote_id, SUM(quantidade) AS qtd_vendida
+      FROM gado_movimentacoes_comerciais_itens
       WHERE movimentacao_id = NEW.id AND lote_id IS NOT NULL
-    );
+      GROUP BY lote_id
+    ) sub
+    WHERE gl.id = sub.lote_id;
   END IF;
 
   RETURN NEW;
