@@ -1,0 +1,6 @@
+{ "formato": "ofx", "ignoradas": [],
+  "lancamentos": [
+    { "data": "2026-08-03", "tipo": "SAIDA",   "valor": 1850.00,  "descricao": "PIX ENVIADO AGROPECUARIA SAO JOAO", "referenciaExterna": "2026080300001" },
+    { "data": "2026-08-10", "tipo": "ENTRADA", "valor": 18400.50, "descricao": "TED RECEBIDA FRIGORIFICO BOA CARNE", "referenciaExterna": "2026081000007" },
+    { "data": "2026-08-15", "tipo": "SAIDA",   "valor": 312.90,   "descricao": "BOLETO ENERGISA", "referenciaExterna": "2026081500002" }
+  ] }

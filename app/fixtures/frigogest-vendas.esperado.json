@@ -1,0 +1,6 @@
+{ "formato": "csv", "encoding": "utf-8", "separador": ",", "ignoradas": [],
+  "lancamentos": [
+    { "data": "2026-08-20", "tipo": "ENTRADA", "valor": 18400.50, "descricao": "Venda 12 bezerros lote 4", "contraparte": "Frigorífico Boa Carne", "referenciaExterna": "V-88213", "extras": { "cabecas": "12", "arrobas": "210.4" } },
+    { "data": "2026-08-22", "tipo": "SAIDA",   "valor": 42300.00, "descricao": "Compra 30 garrotes",        "contraparte": "Fazenda Santa Rita",    "referenciaExterna": "C-11002" },
+    { "data": "2026-08-29", "tipo": "ENTRADA", "valor": 13120.75, "descricao": "Venda 8 novilhas",          "contraparte": "Casa de Carnes Central", "referenciaExterna": "V-88214" }
+  ] }

@@ -1,0 +1,7 @@
+{ "formato": "csv", "encoding": "utf-8", "bom": true, "separador": ";", "ignoradas": ["acima do cabeçalho (título)", "acima do cabeçalho (título)", "linha de total"],
+  "lancamentos": [
+    { "data": "2026-08-02", "tipo": "SAIDA",   "valor": 350.00,  "descricao": "PAGAMENTO PIX JOSE DA SILVA (DIARISTA)" },
+    { "data": "2026-08-07", "tipo": "SAIDA",   "valor": 2140.80, "descricao": "SUPLEMENTO MINERAL NUTRIBOI", "referenciaExterna": "10233" },
+    { "data": "2026-08-12", "tipo": "ENTRADA", "valor": 1800.00, "descricao": "ALUGUEL RECEBIDO MARIA SOUZA" },
+    { "data": "2026-08-25", "tipo": "ENTRADA", "valor": 212.40,  "descricao": "DIVIDENDOS FII HGLG11" }
+  ] }
