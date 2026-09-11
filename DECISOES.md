@@ -1,152 +1,66 @@
-# Decisões — Cérebro Rural
+# Decisões
 
-> Log de decisões arquiteturais com data e motivo.
-> Quando voltar atrás em alguma decisão, registrar aqui com a nova justificativa.
-
----
-
-## D01 — Arquitetura de micro-apps separados
-
-**Data:** abril 2026
-**Decisão:** cada domínio vira um app independente (Almoxarifado, Pastagem, Obras, etc.) com sua própria URL, próprio deploy, próprio schema.
-
-**Alternativa descartada:** um app monolítico com módulos.
-
-**Por quê:**
-- Evita o padrão de "conflito de IAs" que queimou o Thiago no FrigoGest
-- Cada app pode evoluir no seu ritmo
-- Falha em um não derruba os outros
-- O peão usa um app, o dono usa outro — interfaces diferentes sem complexidade
+> Numeradas, com data e motivo. Quando uma for revertida, registrar aqui a nova com a justificativa — nunca apagar a antiga.
+> As decisões da versão anterior do projeto (D01–D10 de abril/2026) estão em [`historico/DECISOES_v0.md`](./historico/DECISOES_v0.md). Este arquivo recomeça do D01.
 
 ---
 
-## D02 — Conector universal via tabela única `lancamentos`
+## D01 — O Cérebro é uma Tomada, não um construtor de apps
+**Data:** 11/09/2026
+**Decisão:** o produto lê o que qualquer app exporta. Não constrói módulos de almoxarifado, pastagem, obras, folha etc. Os apps que fazem isso continuam existindo; o Cérebro pluga neles pela saída.
+**Substitui:** v0 D01 (micro-apps separados).
+**Por quê:** dez apps são dez produtos; nenhum solo entrega isso. E todo app já exporta tabela — construir o que já existe é desperdício.
 
-**Data:** abril 2026
-**Decisão:** toda transação financeira de qualquer app vira um registro na tabela `lancamentos` com schema unificado.
+## D02 — Planilha/export é o adaptador universal; HTTP é canal secundário
+**Data:** 11/09/2026
+**Decisão:** o caminho principal de entrada é arquivo (xlsx, csv, ofx, xml). O canal HTTP existe para app próprio mandar direto, mas nunca é pré-requisito.
+**Por quê:** nenhum banco, cooperativa ou sistema de terceiro vai integrar com a gente. Todos exportam planilha. Quem lê planilha bem, lê tudo.
 
-**Alternativa descartada:** ETL entre bancos separados, ou eventos/filas.
+## D03 — Dedup por hash de linha e de arquivo; provável vai para revisão, nunca é rejeitada em silêncio
+**Data:** 11/09/2026
+**Decisão:** `UNIQUE(fonte_id, hash_linha)` no banco; hash do arquivo corta reenvio antes de abrir; duplicata *provável* (mesma data e valor, fontes diferentes) entra na fila de revisão com o par apontado.
+**Substitui:** v0 D03 (cinco checkpoints obrigatórios em toda entrada).
+**Por quê:** cinco checkpoints em cada lançamento transformam app de campo em cartório. Dois portões automáticos + uma fila humana protegem o relatório sem travar o uso.
 
-**Por quê:**
-- Simplicidade extrema — a IA lê uma tabela só
-- Supabase compartilhado já resolve a integração
-- Fácil de auditar
-- Fácil de consultar no SQL direto
+## D04 — Leitura no navegador; nenhum servidor próprio na v1
+**Data:** 11/09/2026
+**Decisão:** detecção, abertura, perfil, mapeamento e dedup local rodam no navegador (SheetJS, PapaParse, parser OFX próprio). O arquivo só sobe para o Storage depois da confirmação. Única função de borda: `sugerir-mapa`, opcional.
+**Substitui:** v0 host Go/gRPC.
+**Por quê:** a stack escolhida (Vercel + Supabase) não roda processo persistente; leitura local é mais rápida, mais privada e sem custo de infra.
 
----
+## D05 — Nada entra sem origem
+**Data:** 11/09/2026
+**Decisão:** todo lançamento guarda `fonte_id, arquivo_id, aba, linha, hash_linha`. O arquivo bruto fica no Storage. O Painel abre a linha original em dois cliques.
+**Por quê:** confiança em relatório financeiro vem de poder conferir. "De onde saiu esse número?" tem que ter resposta sempre.
 
-## D03 — Camada de Integridade obrigatória com 5 checkpoints
+## D06 — A planilha mestre é do produtor
+**Data:** 11/09/2026
+**Decisão:** `lancamentos` exporta inteira em xlsx/csv a qualquer momento, com colunas fixas e legíveis. Não existe dado no Painel que não esteja na exportação.
+**Por quê:** o contador quer planilha; o produtor quer poder sair sem perder nada. Retenção vem de utilidade, não de cativeiro.
 
-**Data:** abril 2026
-**Decisão:** nenhum dado entra no banco sem passar por formato, duplicata, perguntas de IA, anomalia estatística e confirmação humana.
+## D07 — Confirmação humana uma vez por arquivo, não uma vez por linha
+**Data:** 11/09/2026
+**Decisão:** a prévia é a única parada obrigatória. O que o humano corrige ali vira template (como ler) e memória (o que é cada coisa). Segundo arquivo da mesma fonte, mesmo layout: zero perguntas.
+**Por quê:** é o que faz a Tomada *aprender* cada app em vez de perguntar para sempre.
 
-**Alternativa descartada:** gravação direta sem validações pesadas.
+## D08 — Documento descreve o que existe no código
+**Data:** 11/09/2026
+**Decisão:** se doc e código divergirem, o código vence e o doc é corrigido no mesmo commit. Nenhum `.md` novo na raiz até a v1 estar em uso real.
+**Substitui:** v0 regra "não codar antes da documentação fechar".
+**Por quê:** a regra antiga produziu 3.323 linhas de doc, 0 de frontend e docs que se contradiziam.
 
-**Por quê:**
-- Sem essa camada, o sistema vira lixo em 3 meses
-- Duplicatas silenciosas corrompem relatórios
-- Contador recebe dados confiáveis
-- É o diferencial de qualidade do produto
-
----
-
-## D04 — Cálculo de @ do boi = peso / 15
-
-**Data:** abril 2026 (descoberto durante bug na Calculadora de Boi)
-**Decisão:** 1 arroba = 15 kg, não 30 kg como estava no código original.
-
-**Referência:** padrão brasileiro de mercado.
-
----
-
-## D05 — Três modos na Calculadora de Boi
-
-**Data:** abril 2026
-**Decisão:** antes de sincronizar, a Calculadora pergunta se a pesagem é Compra, Venda ou Conferência interna.
-
-**Por quê:**
-- A mesma balança tem três propósitos completamente diferentes
-- Cada modo gera lançamento diferente (ou nenhum) no Cérebro
-- A lógica fica no app, não no Cérebro (o produtor sabe o contexto)
-
----
-
-## D06 — Captura unificada em vez de integrar apps de notas
-
-**Data:** abril 2026
-**Decisão:** não tentar ler Apple Notes, Samsung Notes, Sticky Notes etc. Criar caixa de entrada única recebendo de WhatsApp, email, Share Sheet e Atalhos do iPhone.
-
-**Alternativa descartada:** plugins para cada app de nota.
-
-**Por quê:**
-- Apple Notes não tem API pública (fim de papo)
-- Manter plugins para cada app é custo eterno
-- Caixa de entrada única é escalável
+## D09 — Sem pressa: portões de qualidade por fase, não prazos
+**Data:** 11/09/2026
+**Decisão:** cada fase só fecha quando bate o portão mensurável de `QUALIDADE.md`. Não existe data de entrega; existe critério de pronto.
+**Por quê:** pedido explícito do autor — "não tenho pressa, quero algo perfeito". Perfeito precisa de definição, não de adjetivo.
 
 ---
 
-## D07 — Stack: React + TypeScript + Vite + Supabase + Vercel
+## Pendentes (esperando as respostas de `PERGUNTAS.md`)
 
-**Data:** abril 2026
-**Decisão:** stack padrão pra todos os micro-apps.
-
-**Por quê:**
-- É a stack que o Thiago já domina
-- Supabase resolve banco, auth e realtime numa assinatura
-- Vercel é rápido e gratuito pra PWAs
-- TypeScript reduz bugs em runtime
-
-**Exceção:** FrigoGest permanece na stack atual dele, não vai migrar.
-
----
-
-## D08 — PWA em vez de React Native (v1)
-
-**Data:** abril 2026
-**Decisão:** todos os micro-apps são PWAs instaláveis, não apps nativos.
-
-**Por quê:**
-- Um código só pra iOS, Android e desktop
-- Deploy instantâneo na Vercel sem review de loja
-- Offline com Service Worker + IndexedDB
-- Pode virar app nativo depois com Capacitor se necessário
-
----
-
-## D09 — Custo médio ponderado no almoxarifado
-
-**Data:** abril 2026
-**Decisão:** custo de cada item é calculado por média ponderada a cada entrada, não FIFO ou LIFO.
-
-**Fórmula:**
-```
-novo_custo = (saldo_atual * custo_atual + qtd_entrada * valor_entrada)
-              / (saldo_atual + qtd_entrada)
-```
-
-**Por quê:**
-- Mais simples de entender e auditar
-- Aceito pela contabilidade brasileira
-- Comum em sistemas de gestão rural
-
----
-
-## D10 — Dois tokens do GitHub separados
-
-**Data:** abril 2026
-**Decisão:** FrigoGest e Cérebro Rural usam tokens de acesso pessoal diferentes.
-
-**Por quê:**
-- Se um token vazar, o outro projeto fica protegido
-- Cada projeto tem sua própria identidade de segurança
-- Thiago deixou explícito: nunca misturar os dois projetos
-
----
-
-## Decisões pendentes (pra discutir)
-
-- [ ] Nome comercial do produto (Cérebro Rural é codinome)
-- [ ] Modelo de cobrança exato (valor do plano base, valor por módulo)
-- [ ] Primeiro cliente (o próprio Thiago ou alguém externo)
-- [ ] Se usar Edge Functions do Supabase ou API Routes da Vercel
-- [ ] Biblioteca de gráficos no Cérebro (Recharts, Chart.js ou Visx)
+- Lista exata de negócios e contas de cada um
+- Plano de contas: o do contador ou o padrão proposto
+- Tratamento de transferências entre contas próprias
+- Quem, além do autor, acessa — e com que papel
+- Nome comercial e domínio
+- Projeto Supabase: criar novo ou reaproveitar
