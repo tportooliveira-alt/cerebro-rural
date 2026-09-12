@@ -80,11 +80,11 @@ export function Hoje({ estado, mes, irPara }: { estado: Estado; mes: string; irP
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-line border border-line mt-4">
           {[
-            { r: 'entrou', v: brlCurto(fin.entradas), c: 'text-ok' },
-            { r: 'saiu', v: brlCurto(fin.saidas), c: 'text-bad' },
-            { r: 'resultado', v: brlCurto(fin.resultado), c: fin.resultado >= 0 ? 'text-ink' : 'text-bad' },
+            { r: 'entrou', v: brlCurto(fin.entradas), c: 'text-ok', largo: false },
+            { r: 'saiu', v: brlCurto(fin.saidas), c: 'text-bad', largo: false },
+            { r: 'resultado', v: brlCurto(fin.resultado), c: fin.resultado >= 0 ? 'text-ink' : 'text-bad', largo: true },
           ].map((k) => (
-            <div key={k.r} className="bg-panel p-4">
+            <div key={k.r} className={`bg-panel p-4 ${k.largo ? 'col-span-2 sm:col-span-1' : ''}`}>
               <div className={`font-display font-extrabold text-2xl leading-tight num ${k.c}`}>{k.v}</div>
               <Rotulo>{k.r}</Rotulo>
             </div>

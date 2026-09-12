@@ -99,6 +99,25 @@
 **Data:** 12/09/2026 · **Origem:** resposta H1 (premissa aceita)
 **Decisão:** projeto novo, free tier, região `sa-east-1`. Criação só quando `0001_cerebro.sql` estiver pronto, e confirmada com o autor no momento (é ação na conta dele).
 
+## D19 — Cada área é um APP SEPARADO que pluga; o Cérebro é a tomada e o painel
+**Data:** 12/09/2026 · **Origem:** resposta J4
+**Decisão:** o Cérebro **não constrói** as telas de gado, almoxarifado, ferramentas ou estoque. Cada um desses é um app separado (ou uma planilha, ou a Calculadora de Boi) que **se pluga**. As 6 áreas de D11 deixam de ser módulos a construir e passam a ser o **contrato de leitura**: o canônico que um app precisa falar para ser lido, e o painel que o Cérebro mostra do que recebeu.
+**Corrige:** a leitura de D11, que dava a entender que as áreas seriam construídas dentro do Cérebro.
+**Por quê:** "colocar gado, almoxarifado, ferramentas — mas isso vai ser em outro app; ele vai ser plugado".
+**Consequência prática:** o que eu construo é só (a) a Tomada, (b) a planilha mestre, (c) o Painel. Nada mais. O canônico por área continua no código porque é o que permite ler o que chega.
+
+## D20 — O Cérebro se expõe como servidor MCP (depois da v1)
+**Data:** 12/09/2026 · **Origem:** resposta J4 ("ideia do Cérebro: plugin MCP")
+**Decisão:** depois de o Painel estar em uso real, o Cérebro publica um **servidor MCP** com poucas ferramentas (`listar_fontes`, `ler_area`, `enviar_registros`, `resumo_do_dia`). Assim qualquer app ou agente — inclusive o Claude — pluga sem HTTP próprio.
+**Não confundir com** o que foi para o arquivo morto: aquilo era uma camada *cliente* de 9 provedores de LLM dentro de um host Go. Isto é o contrário: expor os dados do Cérebro como servidor, algumas dezenas de linhas sobre o mesmo banco.
+**Por quê:** é o mesmo contrato do canal HTTP, com adaptador que agentes já sabem usar. Custa pouco e é exatamente "plugo tudo".
+**Quando:** só depois do portão da Fase 3 (Painel completo). Antes disso, é distração — e você pediu para ver o dashboard abrindo.
+
+## D21 — O Painel vem antes de qualquer canal novo
+**Data:** 12/09/2026 · **Origem:** resposta J4 ("quero ver dashboard abrindo")
+**Decisão:** a próxima entrega é um Painel que **abre e mostra números**, alimentado pela Tomada rodando no navegador, sem banco. Google Sheets, Drive, e-mail e MCP vêm depois dele.
+**Por quê:** pedido direto do autor, e é o único jeito de ele julgar o que está sendo feito.
+
 ---
 
 ## Pendentes (esperando as respostas de `PERGUNTAS.md`)

@@ -192,7 +192,9 @@ Em uma transação:
 
 ---
 
-## Áreas — o canônico de cada uma
+## Áreas — o contrato de quem pluga
+
+Uma área **não é um módulo que o Cérebro constrói** (D19). É o canônico que um app precisa falar para ser lido — e o painel que o Cérebro mostra do que recebeu. Gado vem da Calculadora de Boi ou da planilha de rebanho; estoque e almoxarifado vêm do app de estoque ou da planilha; ferramentas vêm da lista que alguém mantém. O Cérebro lê, guarda com origem e mostra.
 
 O pipeline é o mesmo até a etapa 5. Da etapa 6 em diante, cada área tem o seu canônico, o seu dicionário de sinônimos e as suas regras de dedup. Toda área tem os campos de origem (`fonte, arquivo, aba, linha, hash_linha`) e o campo `origem_registro ∈ {leitura, http, abertura, manual}` — `abertura` é o saldo do primeiro dia (D15).
 
