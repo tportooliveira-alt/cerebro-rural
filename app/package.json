@@ -11,7 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "fixtures": "node scripts/gerar-fixtures.mjs"
+    "fixtures": "node scripts/gerar-fixtures.mjs",
+    "seed": "node scripts/gerar-seed.mjs",
+    "prebuild": "node scripts/gerar-fixtures.mjs && node scripts/gerar-seed.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
@@ -29,6 +31,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^5.0.0",
     "oxlint": "^1.81.0",
+    "playwright": "^1.63.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",

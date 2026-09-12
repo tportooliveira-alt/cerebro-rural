@@ -54,3 +54,32 @@ describe('texto', () => {
     expect(normalizarCabecalho('Valor (R$)')).toBe('valor r')
   })
 })
+
+describe('classificação pelo plano de contas', () => {
+  it('a mesma palavra muda de lado conforme entrada ou saída', async () => {
+    const { classificar } = await import('../classificar')
+    expect(classificar('ted recebida frigorifico boa carne', 'ENTRADA')).toMatchObject({ categoria: 'Receita', subcategoria: 'Venda de Gado' })
+    expect(classificar('compra garrotes fazenda santa rita', 'SAIDA')).toMatchObject({ categoria: 'Custo Produção', subcategoria: 'Compra de Gado' })
+  })
+  it.each([
+    ['suplemento mineral nutriboi', 'SAIDA', 'Suplementação'],
+    ['vacina aftosa doses', 'SAIDA', 'Sanidade'],
+    ['compra com cartao posto trevao', 'SAIDA', 'Combustível'],
+    ['pagamento de boleto energisa', 'SAIDA', 'Energia'],
+    ['pagamento pix jose da silva diarista', 'SAIDA', 'Mão de Obra'],
+    ['pix enviado agropecuaria sao joao', 'SAIDA', 'Suplementação'],
+  ])('%s → %s', async (desc, tipo, sub) => {
+    const { classificar } = await import('../classificar')
+    expect(classificar(desc, tipo as 'SAIDA').subcategoria).toBe(sub)
+  })
+  it('memória vence regra; o que não casa volta sem categoria', async () => {
+    const { classificar } = await import('../classificar')
+    const mem = new Map([['posto trevao', { categoria: 'Pessoal', subcategoria: 'Transporte' }]])
+    expect(classificar('posto trevao', 'SAIDA', undefined, mem)).toMatchObject({ categoria: 'Pessoal', origem: 'memoria' })
+    expect(classificar('xyz abc qualquer coisa', 'SAIDA').categoria).toBeUndefined()
+  })
+  it('coluna da planilha vence tudo', async () => {
+    const { classificar } = await import('../classificar')
+    expect(classificar('posto trevao', 'SAIDA', 'Combustível da fazenda')).toMatchObject({ categoria: 'Combustível da fazenda', origem: 'coluna' })
+  })
+})

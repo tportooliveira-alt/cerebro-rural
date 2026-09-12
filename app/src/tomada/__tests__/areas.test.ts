@@ -76,3 +76,25 @@ describe('ferramentas', () => {
     expect(r.registros[2].campos.estado).toBe('manutenção')
   })
 })
+
+describe('duplicata entre fontes nas áreas', () => {
+  it('a mesma pesagem vinda da Calculadora e da planilha de rebanho é marcada como provável, não gravada duas vezes', async () => {
+    const { marcarDuplicatasArea, chaveFraca } = await import('../dedup')
+    const calc = await lerArquivoArea(ler('gado/calculadora-boi.csv'), 'c.csv', { fonteId: 'calculadora-boi', area: 'gado', hoje: HOJE })
+    const reb = await lerArquivoArea(ler('gado/rebanho.xlsx'), 'r.xlsx', { fonteId: 'planilha-rebanho', area: 'gado', hoje: HOJE })
+    const existentes = calc.registros.map((r) => ({ hashLinha: r.hashLinha, fonteId: 'calculadora-boi', chaveFraca: chaveFraca('gado', r.campos), id: 'calc-' + r.origem.linha }))
+    const marcas = marcarDuplicatasArea('planilha-rebanho', reb.registros, existentes)
+    // BR-0412 e BR-0413 pesados em 10/09 nas duas fontes → prováveis; BR-0187 vendido na Calculadora e pesado na planilha → evento diferente, não é o mesmo fato
+    expect(marcas.filter((m) => m.resultado === 'provavel')).toHaveLength(2)
+    expect(marcas[0].par).toBe('calc-2')
+    expect(marcas.filter((m) => m.resultado === 'nova')).toHaveLength(2)
+  })
+
+  it('reler a mesma fonte marca tudo como duplicada', async () => {
+    const { marcarDuplicatasArea, chaveFraca } = await import('../dedup')
+    const a = await lerArquivoArea(ler('estoque/movimentos.csv'), 'm.csv', { fonteId: 'est', area: 'estoque', hoje: HOJE })
+    const existentes = a.registros.map((r) => ({ hashLinha: r.hashLinha, fonteId: 'est', chaveFraca: chaveFraca('estoque', r.campos) }))
+    const b = await lerArquivoArea(ler('estoque/movimentos.csv'), 'm.csv', { fonteId: 'est', area: 'estoque', hoje: HOJE })
+    expect(marcarDuplicatasArea('est', b.registros, existentes).every((m) => m.resultado === 'duplicada')).toBe(true)
+  })
+})

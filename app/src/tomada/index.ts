@@ -7,11 +7,14 @@ import { mapear } from './mapear'
 import { limparTexto, normalizarDescricao, parseData, parseDinheiro } from './normalizar'
 import { hashArquivo, hashLinha } from './dedup'
 import { NEUTROS } from './sinonimos'
+import { classificar, type Memoria, type OrigemClassificacao } from './classificar'
 
 export * from './tipos'
 export { detectar, abrir, acharTabelas, perfilar, mapear, hashLinha, hashArquivo }
 export * from './normalizar'
 export * from './areas'
+export * from './plano-de-contas'
+export * from './classificar'
 export * from './lerArea'
 export * from './dedup'
 
@@ -25,6 +28,8 @@ export interface OpcoesLeitura {
   /** anos aceitos: [passado, futuro] em relação a hoje */
   janelaAnos?: [number, number]
   hoje?: Date
+  /** descrições que um humano já classificou nesta fazenda */
+  memoria?: Memoria
 }
 
 /**
@@ -102,10 +107,15 @@ export async function lerArquivo(bytes: Uint8Array, nome: string, op: OpcoesLeit
       tabela.cabecalho.forEach((h, i) => { if (!(i in mapa.colunas) && perfil[i]?.tipo !== 'vazia' && c[i] !== null) extras[h] = c[i] })
 
       const neutro = NEUTROS.find(([, re]) => re.test(descricaoNormalizada))
+      const daColuna = iCat >= 0 ? limparTexto(c[iCat]) || undefined : undefined
+      const cls = neutro
+        ? { categoria: neutro[0], subcategoria: undefined, origem: 'regra' as OrigemClassificacao }
+        : classificar(descricaoNormalizada, tipo, daColuna, op.memoria)
       const l: Lancamento = {
         data, tipo, valor, descricao, descricaoNormalizada,
-        categoria: neutro ? neutro[0] : (iCat >= 0 ? limparTexto(c[iCat]) || undefined : undefined),
-        subcategoria: iSub >= 0 ? limparTexto(c[iSub]) || undefined : undefined,
+        categoria: cls.categoria,
+        classificacaoOrigem: cls.categoria ? cls.origem : undefined,
+        subcategoria: cls.subcategoria ?? (iSub >= 0 ? limparTexto(c[iSub]) || undefined : undefined),
         contraparte: iContra >= 0 ? limparTexto(c[iContra]) || undefined : undefined,
         referenciaExterna: iRef >= 0 ? limparTexto(c[iRef]) || undefined : undefined,
         negocio: (iNeg >= 0 ? (limparTexto(c[iNeg]).toLowerCase() as Negocio) : undefined) ?? op.negocio,

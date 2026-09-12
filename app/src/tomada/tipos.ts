@@ -109,6 +109,8 @@ export interface Lancamento {
   hashLinha: string
   /** transferência/estorno ficam fora do resultado */
   neutro?: boolean
+  /** de onde veio a categoria: coluna da planilha, memória, regra do plano de contas, IA ou mão */
+  classificacaoOrigem?: 'regra' | 'memoria' | 'ia' | 'manual' | 'coluna'
 }
 
 export type CodigoProblema =

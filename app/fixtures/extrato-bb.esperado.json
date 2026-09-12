@@ -1,8 +1,8 @@
 { "formato": "csv", "encoding": "latin1", "separador": ";", "ignoradas": ["saldo anterior", "linha de total"],
   "lancamentos": [
-    { "data": "2026-08-03", "tipo": "SAIDA",   "valor": 1850.00,  "descricao": "Pix - Enviado AGROPECUÁRIA SÃO JOÃO", "referenciaExterna": "48211" },
-    { "data": "2026-08-05", "tipo": "SAIDA",   "valor": 420.35,   "descricao": "Compra com Cartão - POSTO TREVÃO" },
-    { "data": "2026-08-10", "tipo": "ENTRADA", "valor": 18400.50, "descricao": "TED Recebida FRIGORIFICO BOA CARNE LTDA", "referenciaExterna": "77120" },
-    { "data": "2026-08-15", "tipo": "SAIDA",   "valor": 312.90,   "descricao": "Pagamento de Boleto ENERGISA" },
+    { "data": "2026-08-03", "tipo": "SAIDA",   "valor": 1850.00,  "descricao": "Pix - Enviado AGROPECUÁRIA SÃO JOÃO", "categoria": "Custo Produção", "referenciaExterna": "48211" },
+    { "data": "2026-08-05", "tipo": "SAIDA",   "valor": 420.35,   "descricao": "Compra com Cartão - POSTO TREVÃO", "categoria": "Custo Produção" },
+    { "data": "2026-08-10", "tipo": "ENTRADA", "valor": 18400.50, "descricao": "TED Recebida FRIGORIFICO BOA CARNE LTDA", "categoria": "Receita", "referenciaExterna": "77120" },
+    { "data": "2026-08-15", "tipo": "SAIDA",   "valor": 312.90,   "descricao": "Pagamento de Boleto ENERGISA", "categoria": "Custo Fixo" },
     { "data": "2026-08-20", "tipo": "SAIDA",   "valor": 5000.00,  "descricao": "Transferência enviada para conta 1234-5 Thiago", "categoria": "Transferência", "neutro": true }
   ] }

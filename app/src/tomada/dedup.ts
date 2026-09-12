@@ -60,3 +60,49 @@ export function marcarDuplicatas(fonteId: string, novos: Lancamento[], existente
     return { indice, resultado: 'nova' }
   })
 }
+
+/**
+ * Chave fraca de uma área: o que identifica o MESMO acontecimento visto por fontes diferentes.
+ * A pesagem do BR-0412 em 10/09 é a mesma, venha da Calculadora ou da planilha de rebanho.
+ */
+export function chaveFraca(area: string, campos: Record<string, string | number | null>): string | null {
+  const v = (k: string) => (campos[k] === null || campos[k] === undefined ? '' : String(campos[k]).toLowerCase().trim())
+  if (area === 'gado') {
+    const quem = v('brinco') || v('lote')
+    if (!quem || !v('data')) return null
+    return [area, quem, v('data'), v('evento')].join('|')
+  }
+  if (area === 'estoque' || area === 'almoxarifado') {
+    if (!v('item') || !v('data')) return null
+    return [area, v('item'), v('data'), v('tipo_mov'), v('quantidade')].join('|')
+  }
+  if (area === 'ferramentas') {
+    const quem = v('codigo') || v('item')
+    return quem ? [area, quem, v('data')].join('|') : null
+  }
+  if (area === 'pasto') return v('pasto') ? [area, v('pasto'), v('data')].join('|') : null
+  return null
+}
+
+export interface ExistenteArea { hashLinha: string; fonteId: string; chaveFraca: string | null; id?: string }
+
+/** Mesma regra de financas, aplicada às áreas: mesma fonte → duplicada; outra fonte com a mesma chave fraca → provável. */
+export function marcarDuplicatasArea(
+  fonteId: string,
+  novos: Array<{ area: string; hashLinha: string; campos: Record<string, string | number | null> }>,
+  existentes: ExistenteArea[],
+): Marcacao[] {
+  const porHash = new Map(existentes.map((e) => [e.hashLinha, e]))
+  const porChave = new Map<string, ExistenteArea>()
+  for (const e of existentes) if (e.fonteId !== fonteId && e.chaveFraca) porChave.set(e.chaveFraca, e)
+  const vistos = new Set<string>()
+  return novos.map((r, indice) => {
+    if (porHash.has(r.hashLinha) || vistos.has(r.hashLinha)) {
+      return { indice, resultado: 'duplicada' as const, par: porHash.get(r.hashLinha)?.id ?? r.hashLinha }
+    }
+    vistos.add(r.hashLinha)
+    const ch = chaveFraca(r.area, r.campos)
+    const par = ch ? porChave.get(ch) : undefined
+    return par ? { indice, resultado: 'provavel' as const, par: par.id ?? par.hashLinha } : { indice, resultado: 'nova' as const }
+  })
+}
