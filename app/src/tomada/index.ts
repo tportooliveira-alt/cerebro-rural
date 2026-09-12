@@ -11,6 +11,8 @@ import { NEUTROS } from './sinonimos'
 export * from './tipos'
 export { detectar, abrir, acharTabelas, perfilar, mapear, hashLinha, hashArquivo }
 export * from './normalizar'
+export * from './areas'
+export * from './lerArea'
 export * from './dedup'
 
 export interface OpcoesLeitura {
@@ -118,4 +120,21 @@ export async function lerArquivo(bytes: Uint8Array, nome: string, op: OpcoesLeit
   }
 
   return { deteccao, hashArquivo: await hashArquivo(bytes), tabelas, perfis, mapas, lancamentos, rejeitados, revisao }
+}
+
+/** O pipeline inteiro para uma área que não é finanças (gado, estoque, almoxarifado, ferramentas, pasto). */
+export async function lerArquivoArea(bytes: Uint8Array, nome: string, op: OpcoesLeitura & { area: Exclude<import('./areas').Area, 'financas'>; origemRegistro?: import('./lerArea').OrigemRegistro }) {
+  const { mapearArea, registrosDaArea } = await import('./lerArea')
+  const deteccao = detectar(bytes, nome)
+  const grades = abrir(bytes, deteccao)
+  const tabelas = grades.flatMap(acharTabelas)
+  const perfis = tabelas.map(perfilar)
+  const mapas = await Promise.all(tabelas.map((t, i) => mapearArea(op.area, t.cabecalho, perfis[i])))
+  const registros = []
+  const rejeitados = []
+  for (let i = 0; i < tabelas.length; i++) {
+    const r = await registrosDaArea(tabelas[i], perfis[i], mapas[i], { fonteId: op.fonteId, area: op.area, origemRegistro: op.origemRegistro, hoje: op.hoje })
+    registros.push(...r.registros); rejeitados.push(...r.rejeitados)
+  }
+  return { deteccao, hashArquivo: await hashArquivo(bytes), tabelas, perfis, mapas, registros, rejeitados }
 }

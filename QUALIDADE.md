@@ -4,29 +4,27 @@
 
 ---
 
-## Fase 0 — Arquivos reais antes de qualquer código de leitura
+## Fase 0 — As planilhas reais de cada área, antes de qualquer código novo
 
-Um leitor treinado em exemplo inventado erra no primeiro arquivo real. Por isso a Fase 0 é coleta.
+Não há histórico a importar (D15). O que existe hoje, e é o que a Tomada precisa aprender a ler, são as **planilhas atuais** de cada área e os exports dos apps.
 
-**Coletar (anonimizados) e commitar em `app/fixtures/`:**
-- extrato de cada conta bancária do autor, em **csv e ofx**, de pelo menos 2 meses consecutivos (para testar sobreposição);
-- fatura de cartão;
-- export do FrigoGest (vendas, compras, abates);
-- export da Calculadora de Boi;
-- a planilha/caderno da fazenda (a de verdade, com título, totais e tudo);
-- a planilha que o contador manda ou pede;
-- se houver: extrato da cooperativa, romaneio de frigorífico comprador, export Conta Azul/Aegro, XML de NF-e recebida.
+**Coletar (anonimizados) e commitar em `app/fixtures/<area>/`:**
+- `financas/` — extrato bancário em csv **e** ofx (2 meses seguidos, para a sobreposição), a planilha de caixa da fazenda, uma NF-e em XML e uma nota em PDF;
+- `gado/` — a planilha de rebanho (brinco/lote, raça, sexo, nascimento, pasto) e um export da Calculadora de Boi com pesagens;
+- `estoque/` e `almoxarifado/` — a planilha de itens e movimentos (o que entrou, o que saiu, saldo);
+- `ferramentas/` — a lista de ferramentas com responsável e local;
+- `pasto/` — a lista de pastos com área e lotação, se existir.
 
-Cada fixture ganha um arquivo `*.esperado.json` escrito à mão com as linhas canônicas que a Tomada **deve** produzir (golden file).
+Cada fixture ganha um `*.esperado.json` escrito à mão com os registros canônicos que a Tomada **deve** produzir (golden file).
 
-**Portão:** ≥ 8 fontes distintas, ≥ 20 arquivos, todos com golden file. Enquanto os reais não chegam, fixtures sintéticas fiéis aos layouts públicos de BB, Sicoob, Bradesco, Itaú, Nubank e Inter — marcadas como sintéticas.
+**Portão:** todas as 6 áreas com pelo menos 1 arquivo real e golden file; `financas` com ≥ 4. Enquanto os reais não chegam, fixtures sintéticas fiéis, marcadas como sintéticas.
 
 ---
 
 ## Fase 1 — `tomada/` verde
 
 **Portão:**
-- 100% das fixtures produzem exatamente o golden file;
+- 100% das fixtures, de todas as áreas, produzem exatamente o golden file;
 - testes de propriedade (fuzz) para parse de dinheiro pt-BR e de datas: nenhum formato listado em `TOMADA.md` §4 falha;
 - reenviar qualquer fixture → 0 linhas novas;
 - extrato de 60 dias seguido do extrato do mês seguinte (30 dias sobrepostos) → só os 30 novos entram;
@@ -43,7 +41,9 @@ Cada fixture ganha um arquivo `*.esperado.json` escrito à mão com as linhas ca
 **Portão:**
 - `0001_cerebro.sql` aplica limpo num projeto Supabase vazio;
 - teste automatizado de RLS: usuário da fazenda A não lê fonte, arquivo nem lançamento da fazenda B;
-- o autor sobe um export real do FrigoGest e um extrato real, confirma o mapa **uma vez**, sobe o do mês seguinte e **não é perguntado nada**;
+- o autor aponta a planilha Google de cada área, confirma o mapa **uma vez**, e na releitura seguinte **não é perguntado nada**;
+- a Calculadora de Boi envia uma pesagem por HTTP e ela aparece no painel de gado em menos de 5 s;
+- um usuário com papel só em `estoque` não vê `financas` (teste automatizado de RLS por área);
 - a prévia mostra, com número de linha, tudo que foi ignorado e por quê;
 - upload pelo celular funciona igual ao PC.
 
@@ -63,7 +63,7 @@ Cada fixture ganha um arquivo `*.esperado.json` escrito à mão com as linhas ca
 
 ## Fase 4 — Uso real (o único portão que importa)
 
-**Portão:** o autor fecha **três meses seguidos** com todos os negócios dele dentro, sem planilha externa e sem corrigir nada direto no banco. A cada mês, anotar: quantas perguntas a Tomada fez, quantas linhas foram para revisão, quanto tempo levou para fechar.
+**Portão:** o autor fecha **três meses seguidos** com todas as áreas da fazenda dentro — finanças, gado, estoque, almoxarifado, ferramentas — sem corrigir nada direto no banco, com a equipe usando os papéis dela. A cada mês, anotar: quantas perguntas a Tomada fez, quantas linhas foram para revisão, quanto tempo levou para fechar.
 
 Só depois deste portão entram: Google Sheets ao vivo, e-mail, WhatsApp, HTTP para o FrigoGest, Livro Caixa/LCDPR, e o primeiro produtor que não é o autor.
 

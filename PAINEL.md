@@ -1,8 +1,8 @@
 # O Painel e a planilha mestre
 
-## A planilha mestre
+## As planilhas mestras — uma por área
 
-Tudo que a Tomada aceitou vive em `lancamentos`, e `lancamentos` **é** a planilha mestre. Ela sai do sistema a qualquer momento, inteira ou filtrada, em:
+Tudo que a Tomada aceitou vive nas tabelas canônicas de cada área (`financas`, `gado`, `estoque`, `almoxarifado`, `ferramentas`, `pasto` — ver `TOMADA.md` §Áreas), e essas tabelas **são** as planilhas mestras. A de finanças é `lancamentos`. Ela sai do sistema a qualquer momento, inteira ou filtrada, em:
 
 - **xlsx** — uma aba por negócio + uma aba "Tudo" + uma aba "Origem" (arquivo, aba, linha de cada lançamento);
 - **csv** — para o contador ou para qualquer outro sistema;
@@ -14,7 +14,9 @@ Colunas fixas, sempre na mesma ordem: `data · negocio · tipo · valor · descr
 
 ## O que o Painel mostra
 
-Uma tela, quatro blocos, tudo clicável.
+**A primeira tela é "Hoje"** (E1): o que aconteceu hoje em cada área, um cartão por área — finanças do dia (entrou, saiu, caixa), estoque e almoxarifado (o que saiu hoje, o que está abaixo do mínimo), gado (pesagens de hoje, animais sem pasto atribuído), ferramentas (movimentações), pasto (ocupação). Cada cartão abre o painel daquela área. A pessoa só vê os cartões das áreas do seu papel (D14).
+
+**O painel de finanças** tem os quatro blocos abaixo. Os painéis das outras áreas seguem a mesma forma — resumo, lista, fontes, revisão — com os números da área (cabeças por pasto e por categoria, saldo por item, ferramentas por responsável).
 
 ### 1. Resultado
 Entradas, saídas e resultado do mês, **por negócio** (fazenda, frigorífico, imóveis, comércio, pessoal) e consolidado. Transferências entre contas do mesmo dono ficam fora do resultado e aparecem à parte. Seletor de mês e de intervalo; comparação com o mês anterior e com o mesmo mês do ano anterior.
@@ -40,10 +42,14 @@ Fila única do que precisa de um humano: duplicatas prováveis (com o par lado a
 
 Um campo de busca que procura em descrição, contraparte, categoria e nos `extras`. "sal mineral" traz tudo que já entrou com isso, de qualquer fonte, de qualquer ano.
 
+## Quem vê o quê
+
+Papéis por área, desde a v1 (D14): `ver` (só olha), `lançar` (sobe arquivo e resolve revisão da área), `revisar` (fecha o mês da área), `administrar` (fontes, papéis, plano de contas). O dono tem tudo em todas as áreas. Um peão com `lançar` em `estoque` abre o Cérebro e vê só o cartão de estoque.
+
 ## No celular
 
 O Painel é a mesma página, em uma coluna. Alvos de toque ≥ 44 px. O bloco Resultado vem primeiro; Revisão tem badge com a contagem. Subir arquivo pelo celular funciona igual ao PC.
 
 ## O que o Painel não faz (nesta versão)
 
-Não projeta caixa futuro, não faz DRE gerencial, não emite Livro Caixa/LCDPR — isso entra depois que houver três meses reais dentro (ver `QUALIDADE.md`, Fase 4). Antes disso, seria enfeite sobre dado que ainda não existe.
+Não projeta caixa futuro, não faz DRE gerencial, não emite Livro Caixa/LCDPR, não consolida empresas além da fazenda (D10) — isso entra depois que houver três meses reais dentro (ver `QUALIDADE.md`, Fase 4). Antes disso, seria enfeite sobre dado que ainda não existe.

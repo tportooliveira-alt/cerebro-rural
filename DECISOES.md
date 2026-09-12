@@ -54,13 +54,56 @@
 **Decisão:** cada fase só fecha quando bate o portão mensurável de `QUALIDADE.md`. Não existe data de entrega; existe critério de pronto.
 **Por quê:** pedido explícito do autor — "não tenho pressa, quero algo perfeito". Perfeito precisa de definição, não de adjetivo.
 
+## D10 — v1 é só a fazenda; empresas entram depois, no mesmo lugar
+**Data:** 12/09/2026 · **Origem:** resposta B1
+**Decisão:** o único `negocio` da v1 é `fazenda` (uma ou mais propriedades). Frigorífico, imóveis, comércio e pessoal entram depois — sem mudar o modelo, só ligando fontes novas.
+**Por quê:** "por enquanto só as fazendas; depois aplicamos o Cérebro pra tudo que a pessoa tiver de empresa".
+
+## D11 — A Tomada lê qualquer tabela, não só tabela de dinheiro
+**Data:** 12/09/2026 · **Origem:** respostas A2, E1, I1
+**Decisão:** cada fonte pertence a uma **área**: `financas`, `gado`, `estoque`, `almoxarifado`, `ferramentas`, `pasto`. Cada área tem seu esquema canônico (ver `TOMADA.md` §Áreas), seu dicionário de sinônimos, sua planilha mestre e seu painel. O pipeline (detectar → … → prévia → gravar com origem) é o mesmo para todas; só o passo "normalizar para o canônico" muda por área.
+**Substitui:** a leitura restrita a `lancamentos` da versão de 11/09.
+**Por quê:** o autor quer ver "estoque e almoxarifado", "gado", "ferramentas", "cada qual com seu filtro, separadamente". Pesagem não é dinheiro; sal mineral no estoque não é dinheiro. Mas todos são tabela — e tabela a Tomada lê.
+
+## D12 — Google Sheets, Drive e e-mail são canais da v1
+**Data:** 12/09/2026 · **Origem:** resposta B1
+**Decisão:** além do upload, a v1 lê planilhas do Google Sheets por link (releitura automática), arquivos numa pasta do Drive e anexos de um endereço de e-mail. A planilha do produtor continua sendo *o app* — o Cérebro lê.
+**Substitui:** a ordem "upload v1 → Sheets v1.1 → e-mail v1.2" de `TOMADA.md`.
+**Por quê:** "tudo num lugar só, conectado a planilhas Google, e-mail e Drive". Se a equipe já preenche planilha, não há por que criar tela de digitação.
+
+## D13 — Calculadora de Boi conecta direto: a pesagem entra na hora
+**Data:** 12/09/2026 · **Origem:** resposta A2
+**Decisão:** a Calculadora de Boi (app próprio) envia cada pesagem por HTTP para a Tomada, área `gado`. A pesagem fica registrada no ato; a atribuição do **pasto** é feita depois, no painel de gado, por quem tem o papel. Venda/compra confirmadas na Calculadora geram também um lançamento em `financas`.
+**Por quê:** "assim, pesar já entra no sistema; depois encaminhamos qual pasto".
+
+## D14 — Papéis por área desde a v1
+**Data:** 12/09/2026 · **Origem:** resposta F1
+**Decisão:** cada pessoa tem um papel por área (`ver`, `lançar`, `revisar`, `administrar`) e só enxerga as áreas do seu cargo. O dono vê tudo. RLS por `fazenda_id` **e** por área.
+**Por quê:** "várias pessoas, cada uma com área separada, acesso exclusivo dependendo do cargo".
+
+## D15 — Sem importar histórico: começa hoje, com saldos de abertura
+**Data:** 12/09/2026 · **Origem:** resposta I1
+**Decisão:** nada do passado é carregado. No primeiro dia entram os **saldos de abertura** de cada área: dinheiro em caixa, estoque, gado (por lote/brinco), almoxarifado, ferramentas. Cada saldo de abertura é um registro normal com `origem = abertura`.
+**Substitui:** Fase 0 de `QUALIDADE.md` (coleta de 2 meses de extrato etc.) — a coleta agora é das planilhas *atuais* de cada área.
+**Por quê:** "começar de agora pra não atrapalhar".
+
+## D16 — Transferência entre contas próprias é neutra
+**Data:** 12/09/2026 · **Origem:** resposta C1 (premissa aceita)
+**Decisão:** marcada `Transferência`, fora do resultado, visível à parte.
+
+## D17 — Plano de contas padrão, ajustável
+**Data:** 12/09/2026 · **Origem:** resposta D1 (premissa aceita)
+**Decisão:** o plano proposto em `PERGUNTAS.md` D1 vira o padrão inicial (`app/src/tomada/plano-de-contas.ts`); o produtor renomeia e acrescenta pelo painel.
+
+## D18 — Projeto Supabase novo, São Paulo, criado com autorização do autor
+**Data:** 12/09/2026 · **Origem:** resposta H1 (premissa aceita)
+**Decisão:** projeto novo, free tier, região `sa-east-1`. Criação só quando `0001_cerebro.sql` estiver pronto, e confirmada com o autor no momento (é ação na conta dele).
+
 ---
 
 ## Pendentes (esperando as respostas de `PERGUNTAS.md`)
 
-- Lista exata de negócios e contas de cada um
-- Plano de contas: o do contador ou o padrão proposto
-- Tratamento de transferências entre contas próprias
-- Quem, além do autor, acessa — e com que papel
-- Nome comercial e domínio
-- Projeto Supabase: criar novo ou reaproveitar
+- Quais planilhas Google existem hoje para cada área e quem preenche (novas perguntas A13–A16)
+- Lista de cargos e o que cada um vê (F6–F8)
+- Formato exato do que a Calculadora de Boi envia (A17)
+- Nome comercial e domínio (H3)

@@ -85,3 +85,52 @@ const frigo = [
 ].join('\n') + '\n'
 writeFileSync('fixtures/frigogest-vendas.csv', frigo, 'utf8')
 console.log('fixtures geradas')
+
+// ───────── áreas além de finanças (D11) ─────────
+mkdirSync('fixtures/gado', { recursive: true }); mkdirSync('fixtures/estoque', { recursive: true }); mkdirSync('fixtures/ferramentas', { recursive: true })
+
+// gado: planilha de rebanho com brinco, peso em ARROBAS, pasto e nascimento como Date
+const rebanho = [
+  ['REBANHO — FAZENDA BOA VISTA'],
+  ['Atualizado em 10/09/2026'],
+  [],
+  ['Brinco', 'Lote', 'Categoria', 'Sexo', 'Raça', 'Nascimento', 'Pasto', 'Arrobas', 'Data Pesagem', 'Evento'],
+  ['BR-0412', 'Lote 4', 'Garrote', 'M', 'Nelore', new Date(2024, 4, 12), 'Pasto Alto', 12.4, new Date(2026, 8, 10), 'Pesagem'],
+  ['BR-0413', 'Lote 4', 'Garrote', 'M', 'Nelore x Angus', new Date(2024, 5, 3), 'Pasto Alto', 13.1, new Date(2026, 8, 10), 'Pesagem'],
+  ['BR-0187', 'Lote 1', 'Vaca', 'F', 'Nelore', new Date(2021, 2, 20), 'Baixão', 18.6, new Date(2026, 8, 10), 'Pesagem'],
+  ['BR-0512', 'Lote 4', 'Bezerro', 'M', 'Nelore', new Date(2026, 7, 28), '', null, null, 'Nascimento'],
+  ['TOTAL', null, null, null, null, null, null, 44.1, null, null],
+]
+const wbG = XLSX.utils.book_new()
+XLSX.utils.book_append_sheet(wbG, XLSX.utils.aoa_to_sheet(rebanho, { cellDates: true }), 'Rebanho')
+XLSX.writeFile(wbG, 'fixtures/gado/rebanho.xlsx', { cellDates: true })
+
+// gado: export da Calculadora de Boi — csv simples, peso em kg, modo
+const calc = [
+  'data;lote;brinco;peso_kg;modo;arroba;valor',
+  '10/09/2026;Lote 4;BR-0412;186,0;Conferência;;',
+  '10/09/2026;Lote 4;BR-0413;196,5;Conferência;;',
+  '10/09/2026;Lote 1;BR-0187;279,0;Venda;340,00;6.324,00',
+].join('\n') + '\n'
+writeFileSync('fixtures/gado/calculadora-boi.csv', calc, 'utf8')
+
+// estoque: planilha de movimentos com E/S e saldo mínimo
+const est = [
+  'Código;Item;Unidade;Qtd;Tipo;Data;Local;Responsável;Custo Unitário;Mínimo',
+  'SAL-01;Sal mineral proteinado;SC 30kg;20;E;02/08/2026;Galpão;Thiago;92,50;10',
+  'SAL-01;Sal mineral proteinado;SC 30kg;6;S;14/08/2026;Galpão;Peão Zé;;10',
+  'VAC-03;Vacina aftosa;FR 50ml;4;E;07/08/2026;Farmácia;Thiago;120,00;2',
+  'VAC-03;Vacina aftosa;FR 50ml;1;S;09/08/2026;Farmácia;Vet;;2',
+  'RAC-02;Ração engorda;SC 40kg;0;S;20/08/2026;Galpão;Peão Zé;;15',
+].join('\n') + '\n'
+writeFileSync('fixtures/estoque/movimentos.csv', est, 'utf8')
+
+// ferramentas: quem está com o quê
+const fer = [
+  'Patrimônio,Ferramenta,Responsável,Local,Estado,Data',
+  'FER-101,Roçadeira Stihl FS 220,Peão Zé,Oficina,ok,05/09/2026',
+  'FER-102,Furadeira Bosch,Thiago,Escritório,ok,01/09/2026',
+  'FER-103,Motosserra,Ninguém,Oficina,manutenção,20/08/2026',
+].join('\n') + '\n'
+writeFileSync('fixtures/ferramentas/inventario.csv', fer, 'utf8')
+console.log('fixtures de áreas geradas')

@@ -5,6 +5,8 @@
 > Responda o que souber, na ordem que quiser, aos poucos. Cada resposta vira uma linha em `DECISOES.md` ou uma fixture em `app/fixtures/`.
 >
 > ⚑ = destrava trabalho imediato. Responda estas primeiro.
+>
+> **Respondidas em 12/09:** A2, B1, C1, D1, E1, F1, H1, I1, J1 → viraram D10–D18 em `DECISOES.md`. As perguntas abaixo são as que sobraram e as que essas respostas abriram.
 
 ---
 
@@ -13,10 +15,6 @@
 **A1 ⚑ Liste todo sistema, app, banco e planilha de onde sai dinheiro ou informação de dinheiro hoje — um por linha, com o negócio a que pertence.**
 *Por que pergunto:* a Tomada é treinada em cima das suas fontes reais. Sem a lista, eu construo para um produtor genérico.
 *Se não responder, assumo:* FrigoGest, Calculadora de Boi, 1 conta bancária PF, 1 cartão, 1 planilha da fazenda, 1 planilha do contador.
-
-**A2 ⚑ Para cada fonte de A1: em que formato ela exporta (xlsx, csv, ofx, pdf, "só na tela")? Com que frequência você tiraria esse export (diário, semanal, mensal)?**
-*Por que:* define a ordem dos parsers e quais canais importam. Fonte que só mostra na tela precisa de outro caminho (foto, digitação, HTTP).
-*Assumo:* xlsx e csv mensais; banco em csv/ofx mensal.
 
 **A3 ⚑ Você consegue me mandar um arquivo real de cada fonte, anonimizado (troca nomes, mantém o layout)? Pelo menos dois meses seguidos do extrato bancário.**
 *Por que:* é a Fase 0 de `QUALIDADE.md`. Leitor treinado em arquivo inventado erra no primeiro arquivo de verdade. Dois meses seguidos testam a sobreposição.
@@ -58,13 +56,37 @@
 *Por que:* se for > 20%, precisa de um caminho de digitação rápida no celular na v1. Se for < 20%, fica para depois.
 *Assumo:* < 20%; digitação manual mínima na v1 (data, valor, descrição, negócio).
 
+**A13 ⚑ Para cada área — finanças, gado, estoque, almoxarifado, ferramentas, pasto — existe hoje uma planilha (Google Sheets ou Excel)? Manda o link ou o arquivo de cada uma, mesmo bagunçada.**
+*Por que:* você disse que o Cérebro conecta a planilhas Google. Então a planilha de cada área é *o app* daquela área, e a Tomada precisa aprender o layout de cada uma. Sem elas, eu invento layouts.
+*Assumo:* uma planilha por área, uma aba por mês, cabeçalho na linha 1.
+
+**A14 ⚑ Quem preenche cada planilha hoje, e de onde (celular no campo, PC no escritório)?**
+*Por que:* define quem recebe papel `lançar` em cada área (D14) e se a planilha precisa ser reorganizada para leitura automática.
+*Assumo:* você preenche finanças; um funcionário preenche estoque/almoxarifado; gado vem da Calculadora.
+
+**A15 O estoque e o almoxarifado são controlados separados hoje, ou é uma planilha só? O que é "estoque" (insumo: sal, ração, vacina) e o que é "almoxarifado" (peça, material, ferramenta)?**
+*Por que:* você pediu para olhar separado; preciso saber onde passa a linha.
+*Assumo:* estoque = insumos consumíveis; almoxarifado = materiais e peças; ferramentas = bens duráveis com responsável.
+
+**A16 As notas de compra chegam como XML de NF-e, PDF, foto, ou papel? Quer que a nota de compra alimente o estoque automaticamente (item, quantidade, preço) além do financeiro?**
+*Por que:* XML dá item por item, exato; PDF dá o total com segurança e os itens com esforço; foto exige OCR. E uma nota pode alimentar duas áreas de uma vez.
+*Assumo:* PDF na v1 (total + fornecedor + data + número); itens só de XML.
+
+**A17 ⚑ O que a Calculadora de Boi envia hoje por pesagem? Brinco ou só lote? Peso, data, modo (compra/venda/conferência), preço da arroba?**
+*Por que:* é o contrato HTTP da fonte `calculadora-boi` (D13). Preciso dos campos exatos.
+*Assumo:* `{lote, brinco?, peso_kg, data, modo, arroba?, valor?}`.
+
+**A18 Como a atribuição de pasto deve acontecer depois da pesagem: lista de animais sem pasto no painel de gado, escolhe o pasto e confirma? Por lote inteiro ou animal a animal?**
+*Por que:* "depois encaminhamos qual pasto" — é uma ação no painel, e a forma dela muda a tela.
+*Assumo:* por lote, com opção de animal a animal.
+
+**A19 A coluna de arroba nas suas planilhas de gado é arroba de carcaça ou peso vivo? (a Tomada converte a 15 kg por arroba — preciso saber se o kg resultante é de carcaça ou vivo)**
+*Por que:* 1 @ = 15 kg é o padrão, mas se a planilha anota arroba de carcaça, o kg derivado é de carcaça, não peso vivo — e o painel tem que dizer qual é, sob pena de comparar coisas diferentes.
+*Assumo:* arroba de carcaça; o painel rotula o valor derivado como "kg carcaça (derivado)".
+
 ---
 
 ## B — Os negócios e as contas
-
-**B1 ⚑ Liste os negócios exatamente como quer vê-los no Painel (ex.: Fazenda Boa Vista, Frigorífico, Imóveis, Comércio, Pessoal). Cada um tem CPF/CNPJ próprio ou está tudo no seu CPF?**
-*Por que:* `negocio` é a etiqueta principal de tudo. E a obrigação fiscal muda entre PF e PJ (Livro Caixa × contabilidade).
-*Assumo:* fazenda, frigorífico, imóveis, pessoal — fazenda e pessoal no CPF, frigorífico em CNPJ.
 
 **B2 Há mais de uma fazenda ou propriedade rural? Quer vê-las separadas ou juntas?**
 *Por que:* o Livro Caixa do produtor rural é por imóvel rural. Se há mais de uma, `negocio` precisa de um nível abaixo.
@@ -94,13 +116,13 @@
 *Por que:* por funcionário exige `contraparte` bem preenchida e regra por nome.
 *Assumo:* PIX; ver por funcionário via contraparte.
 
+**B9 ⚑ Quantas fazendas/propriedades entram na v1 e como quer vê-las: uma só, ou cada uma separada com um consolidado?**
+*Por que:* você disse "só as fazendas" — no plural. Uma ou várias muda o modelo (D10).
+*Assumo:* uma fazenda na v1.
+
 ---
 
 ## C — Regras de dinheiro
-
-**C1 ⚑ Transferência entre suas próprias contas (PF → PJ, conta → cartão, conta → caixa): como quer que apareça? Sugestão: marcada como Transferência, fora do resultado, visível à parte.**
-*Por que:* é o erro nº 1 de qualquer consolidação — a mesma grana contada como saída de um lado e entrada do outro.
-*Assumo:* a sugestão.
 
 **C2 Compra parcelada em 6x: o que conta é quando o dinheiro sai (regime de caixa) ou quando comprou (competência)? Sugestão: caixa — é o que o extrato mostra e o que o Livro Caixa exige.**
 *Por que:* muda todo cálculo do mês.
@@ -142,21 +164,6 @@
 
 ## D — Categorias
 
-**D1 ⚑ Você (ou seu contador) já tem um plano de contas? Manda ele. Se não tem, aceita começar com este e ajustar?**
-```
-ENTRADA  Receita › Venda de Gado · Venda de Carne/Abate · Aluguel · Serviço · Financeira · Outra
-SAÍDA    Custo Produção › Suplementação · Sanidade · Pasto/Forragem · Combustível · Mão de Obra · Frete
-         Custo Frigorífico › Compra de Gado · Insumo · Energia · Mão de Obra · Frete
-         Custo Fixo › Folha · Encargos · Energia · Água · Telefone/Internet · Contador · Seguro
-         Investimento › Máquina · Benfeitoria · Cerca · Animal de Reposição
-         Imóveis › Manutenção · IPTU · Condomínio
-         Pessoal › Alimentação · Saúde · Educação · Casa · Lazer · Transporte
-         Impostos › ITR · Funrural · IR · Outros
-NEUTRO   Transferência · Estorno · Pagamento de Fatura
-```
-*Por que:* toda classificação automática depende disso. Mudar depois custa reclassificar.
-*Assumo:* o padrão acima.
-
 **D2 Quais palavras aparecem na descrição do extrato que já te dizem a categoria na hora? (ex.: "AGROPEC" = insumo, "POSTO" = combustível, nome do inquilino = aluguel). Liste as que lembrar.**
 *Por que:* viram as regras iniciais da fonte — o primeiro upload já sai classificado.
 *Assumo:* começo com um dicionário rural genérico e a memória aprende.
@@ -176,10 +183,6 @@ NEUTRO   Transferência · Estorno · Pagamento de Fatura
 ---
 
 ## E — O Painel: o que você quer ver
-
-**E1 ⚑ Quando você abrir o Cérebro de manhã, qual é a ÚNICA pergunta que ele tem que responder na primeira tela?**
-*Por que:* é o bloco 1 do Painel. Tudo o mais é secundário.
-*Assumo:* "Esse mês, em cada negócio, entrou quanto, saiu quanto, sobrou quanto?"
 
 **E2 O período natural para você é mês civil, safra (ex.: jul–jun), ou os dois?**
 *Por que:* define o seletor de período e as comparações.
@@ -213,10 +216,6 @@ NEUTRO   Transferência · Estorno · Pagamento de Fatura
 
 ## F — Quem usa
 
-**F1 ⚑ Além de você, quem vai abrir o Painel? Esposa, sócio, gerente, contador? Cada um vê o quê?**
-*Por que:* define papéis e RLS. Só você = um papel, tudo mais simples.
-*Assumo:* só você na v1; contador com acesso somente leitura na v1.1.
-
 **F2 Alguém além de você vai subir arquivo na Tomada?**
 *Por que:* se sim, a prévia tem que ser à prova de quem não conhece o sistema.
 *Assumo:* só você.
@@ -232,6 +231,18 @@ NEUTRO   Transferência · Estorno · Pagamento de Fatura
 **F5 Login: e-mail + senha, link mágico por e-mail, ou Google?**
 *Por que:* Supabase Auth suporta os três; cada um tem um atrito.
 *Assumo:* link mágico por e-mail + Google.
+
+**F6 ⚑ Liste os cargos que vão usar o Cérebro (ex.: dono, gerente, peão do gado, almoxarife, contador) e, para cada um, quais áreas ele vê e em quais pode lançar.**
+*Por que:* vira a tabela de papéis (D14). Sem ela, todo mundo vê tudo ou ninguém vê nada.
+*Assumo:* dono (tudo); gerente (vê tudo, lança em tudo); peão de gado (gado: lançar); almoxarife (estoque + almoxarifado + ferramentas: lançar); contador (finanças: ver).
+
+**F7 Cada pessoa entra com o próprio e-mail/celular, ou você prefere criar os acessos e entregar?**
+*Por que:* define o fluxo de convite.
+*Assumo:* você convida por e-mail; a pessoa entra com link mágico.
+
+**F8 Se um funcionário sair, o que acontece com o que ele lançou? (fica, com o nome dele, e o acesso é cortado)**
+*Por que:* auditoria. Lançamento nunca some; acesso sim.
+*Assumo:* exatamente isso.
 
 ---
 
@@ -265,10 +276,6 @@ NEUTRO   Transferência · Estorno · Pagamento de Fatura
 
 ## H — Infra, nome e credenciais
 
-**H1 ⚑ Projeto Supabase: crio um novo (região São Paulo, `sa-east-1`) ou você já tem um para isso? Precisa da sua autorização para criar (tem custo zero no free tier, mas é uma ação na sua conta).**
-*Por que:* sem ele não há schema aplicado nem login.
-*Assumo:* novo, free tier, `sa-east-1`, criado por você ou por mim via MCP com seu OK.
-
 **H2 Vercel: usa o time atual (`team_Ep4J…`) com um projeto novo `cerebro-rural`?**
 *Por que:* deploy do `app/`.
 *Assumo:* sim.
@@ -293,10 +300,6 @@ NEUTRO   Transferência · Estorno · Pagamento de Fatura
 
 ## I — Histórico
 
-**I1 ⚑ Quantos anos para trás você quer carregar na primeira leva? Tem os arquivos?**
-*Por que:* define o volume dos primeiros uploads e o teste de performance.
-*Assumo:* 2026 inteiro; 2025 se houver arquivo.
-
 **I2 O histórico antigo está em planilha própria, em extrato baixável, ou só no contador?**
 *Por que:* extrato antigo às vezes só sai em PDF. Se for o caso, o parser de PDF sobe de prioridade.
 *Assumo:* planilha própria + extrato csv.
@@ -309,13 +312,13 @@ NEUTRO   Transferência · Estorno · Pagamento de Fatura
 *Por que:* dado ruim no histórico polui comparação com o ano anterior.
 *Assumo:* carrega tudo e marca.
 
+**I5 ⚑ Saldos de abertura (D15): para cada área, o que existe hoje? Dinheiro em caixa (por conta), itens em estoque com quantidade, animais (por lote ou brinco), itens de almoxarifado, ferramentas com responsável. Pode ser a planilha atual de cada área — é o mesmo arquivo de A13.**
+*Por que:* é o ponto zero. Tudo que o Painel mostrar parte daqui.
+*Assumo:* a primeira leitura de cada planilha vira o saldo de abertura, com a data do dia.
+
 ---
 
 ## J — O que é "perfeito" para você
-
-**J1 ⚑ Descreva o dia em que você diz "está perfeito". O que você fez, o que viu, quanto tempo levou?**
-*Por que:* vira o portão da Fase 4 em `QUALIDADE.md`. Hoje ele diz "três meses fechados sem planilha externa" — quero a sua versão.
-*Assumo:* a versão atual.
 
 **J2 O que te irritaria mais: a Tomada perguntar demais, ou classificar errado sem perguntar?**
 *Por que:* define o ponto de corte entre automático e revisão.

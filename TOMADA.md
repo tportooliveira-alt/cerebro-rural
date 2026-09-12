@@ -9,6 +9,8 @@
 
 Não existe integração com app A, B ou C. Existe **leitura de tabela**. Todo app exporta tabela; a Tomada lê tabela. O que muda de um app para outro é o *layout* — e layout é coisa que se **aprende uma vez e se lembra**.
 
+E tabela não é só de dinheiro. Rebanho, pesagem, estoque, almoxarifado, ferramentas, pasto — tudo é tabela. Por isso cada fonte pertence a uma **área** (D11), e cada área tem seu esquema canônico, seu dicionário e seu painel. O pipeline é um só.
+
 Três compromissos que não se negociam:
 
 1. **Nada entra duas vezes.** Reenviar o mesmo arquivo, ou um extrato que sobrepõe o anterior, não duplica nada.
@@ -21,13 +23,14 @@ Três compromissos que não se negociam:
 
 | # | Canal | Quando | Como funciona |
 |---|---|---|---|
-| 1 | **Upload** | v1 | Arrasta o arquivo no painel, do PC ou do celular. A leitura acontece no navegador; o arquivo só sobe depois da confirmação. |
-| 2 | **Google Sheets / Drive** | v1.1 | Aponta um link. A Tomada relê sozinha quando a planilha muda. O produtor só mantém a planilha dele viva. |
-| 3 | **E-mail** | v1.2 | Endereço próprio por fazenda. Banco e sistemas mandam relatório por e-mail — basta encaminhar. Anexo é lido como upload. |
-| 4 | **HTTP** | v1.2 | `POST /ingest` com chave por fonte. Para app próprio (FrigoGest, Calculadora de Boi) mandar direto, sem passar por arquivo. |
-| 5 | **WhatsApp** | v1.3 | Anexo enviado ao número da fazenda. Mesmo caminho do e-mail. |
+| 1 | **Google Sheets** | v1 | A planilha que a equipe já preenche é *o app*. Aponta o link; a Tomada relê sozinha quando muda. É o canal principal (D12). |
+| 2 | **Upload** | v1 | Arrasta o arquivo no painel, do PC ou do celular. A leitura acontece no navegador; o arquivo só sobe depois da confirmação. |
+| 3 | **Drive** | v1 | Uma pasta por área. Arquivo novo na pasta = upload automático. |
+| 4 | **E-mail** | v1 | Endereço próprio por fazenda. Banco e sistemas mandam relatório por e-mail — basta encaminhar. Anexo é lido como upload. |
+| 5 | **HTTP** | v1 | `POST /ingest` com chave por fonte. A Calculadora de Boi manda cada pesagem no ato (D13). |
+| 6 | **WhatsApp** | v1.3 | Anexo enviado ao número da fazenda. Mesmo caminho do e-mail. |
 
-Formatos, em ordem de prioridade: **xlsx**, **csv/tsv**, **ofx** (extrato bancário — o maior volume no Brasil), xls, **xml de NF-e** (100% exato, sem heurística), pdf de extrato (texto, por último).
+Formatos, em ordem de prioridade: **Google Sheets**, **xlsx**, **csv/tsv**, **ofx** (extrato bancário), **xml de NF-e** (100% exato, sem heurística), xls, **pdf** de nota e de extrato (texto; o autor pediu "PDF de tudo", então entra na v1 para nota de compra).
 
 ---
 
@@ -189,15 +192,38 @@ Em uma transação:
 
 ---
 
+## Áreas — o canônico de cada uma
+
+O pipeline é o mesmo até a etapa 5. Da etapa 6 em diante, cada área tem o seu canônico, o seu dicionário de sinônimos e as suas regras de dedup. Toda área tem os campos de origem (`fonte, arquivo, aba, linha, hash_linha`) e o campo `origem_registro ∈ {leitura, http, abertura, manual}` — `abertura` é o saldo do primeiro dia (D15).
+
+| Área | Canônico (uma linha = …) | Sinônimos típicos | Chave de dedup |
+|---|---|---|---|
+| **financas** | um lançamento: `data · tipo · valor · descricao · categoria · subcategoria · contraparte · referencia_externa · negocio` | ver §5 | fonte + data + valor + descrição normalizada + referência |
+| **gado** | um animal ou um evento de animal: `brinco/identificador · lote · categoria (bezerro, garrote, vaca…) · sexo · raca · nascimento · pasto_atual · peso_kg · data_pesagem · evento (pesagem, entrada, saida, morte, nascimento, mudanca_pasto)` | brinco, sisbov, número, lote, categoria, sexo, raça, nascimento, idade, pasto, piquete, peso, kg, arroba, @, data pesagem, balança | fonte + brinco + evento + data (pesagem: + peso) |
+| **estoque** | um item ou um movimento: `item · unidade · quantidade · tipo (entrada, saida, ajuste, saldo) · data · local · responsavel · custo_unitario` | item, produto, insumo, descrição, unidade, un, sc, kg, l, qtd, quantidade, entrada, saída, saldo, estoque atual, mínimo, local, depósito | fonte + item + data + tipo + quantidade |
+| **almoxarifado** | mesmo canônico de `estoque`, área separada porque o autor quer olhar separado (E1); itens são materiais e peças, não insumos | idem + peça, material, código, prateleira, retirado por, liberado por | idem |
+| **ferramentas** | uma ferramenta: `item · codigo · responsavel · local · estado (ok, manutenção, perdida) · data_movimento` | ferramenta, equipamento, patrimônio, responsável, quem está com, local, setor, estado, condição | fonte + código (ou item + responsável + data) |
+| **pasto** | um pasto ou uma ocupação: `pasto · area_ha · capacidade_ua · lote_atual · entrada · saida` | pasto, piquete, módulo, área, hectares, ha, lotação, UA, lote, entrada, saída | fonte + pasto (+ lote + entrada) |
+
+Regras que atravessam áreas:
+
+- **Pesagem da Calculadora** entra em `gado` como evento `pesagem` com `peso_kg`, `data_pesagem`, `brinco` ou `lote`. O `pasto_atual` fica vazio até alguém atribuir no painel (D13). Se a Calculadora marcar a pesagem como *venda* ou *compra*, gera também um lançamento em `financas` com a mesma `referencia_externa` — os dois registros apontam um para o outro.
+- **Saldo de abertura** (D15): a primeira leitura de cada área grava cada linha com `origem_registro = abertura` e `data = data de abertura`. Não é entrada nem saída: é o ponto zero.
+- **Painel por área** (E1): cada área tem o seu; o consolidado só existe em `financas`.
+- **Papéis por área** (D14): quem tem papel só em `estoque` não vê nem lê nem grava `financas`.
+- O plano de contas padrão de `financas` está em `app/src/tomada/plano-de-contas.ts` (D17).
+
+---
+
 ## O canal HTTP (para app próprio)
 
-Mesmo pipeline, sem as etapas 1–5: o app manda já no canônico.
+Mesmo pipeline, sem as etapas 1–5: o app manda já no canônico da área. Exemplo de `financas` (uma pesagem da Calculadora vai para `gado`, com `area: "gado"` e os campos daquele canônico):
 
 ```
 POST /ingest
 Authorization: Bearer cr_live_…
 
-{ "eventos": [ {
+{ "area": "financas", "eventos": [ {
     "evento_id": "frigogest:venda:88213",     ← idempotência (vira referencia_externa)
     "data": "2026-09-10",
     "tipo": "ENTRADA",
