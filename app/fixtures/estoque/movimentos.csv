@@ -1,0 +1,6 @@
+Código;Item;Unidade;Qtd;Tipo;Data;Local;Responsável;Custo Unitário;Mínimo
+SAL-01;Sal mineral proteinado;SC 30kg;20;E;02/08/2026;Galpão;Thiago;92,50;10
+SAL-01;Sal mineral proteinado;SC 30kg;6;S;14/08/2026;Galpão;Peão Zé;;10
+VAC-03;Vacina aftosa;FR 50ml;4;E;07/08/2026;Farmácia;Thiago;120,00;2
+VAC-03;Vacina aftosa;FR 50ml;1;S;09/08/2026;Farmácia;Vet;;2
+RAC-02;Ração engorda;SC 40kg;0;S;20/08/2026;Galpão;Peão Zé;;15

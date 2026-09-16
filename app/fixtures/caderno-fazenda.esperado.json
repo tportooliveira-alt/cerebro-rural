@@ -1,0 +1,8 @@
+{ "formato": "xlsx", "tabelas": 2, "ignoradas": ["acima do cabeçalho (título)", "acima do cabeçalho (título)", "linha de total", "linha de total"],
+  "lancamentos": [
+    { "data": "2026-08-02", "tipo": "SAIDA",   "valor": 1850.00,  "descricao": "Sal mineral 20 sacos",   "contraparte": "Agropecuária São João", "linha": 5 },
+    { "data": "2026-08-09", "tipo": "SAIDA",   "valor": 350.00,   "descricao": "Diária João (cerca)",    "contraparte": "João Silva", "linha": 6 },
+    { "data": "2026-08-16", "tipo": "SAIDA",   "valor": 480.50,   "descricao": "Vacina aftosa 60 doses", "contraparte": "Vet Center", "linha": 7 },
+    { "data": "2026-08-20", "tipo": "ENTRADA", "valor": 18400.50, "descricao": "Venda 12 bezerros",      "contraparte": "Frigorífico Boa Carne", "linha": 12 },
+    { "data": "2026-08-28", "tipo": "ENTRADA", "valor": 1800.00,  "descricao": "Aluguel casa da rua 7",  "contraparte": "Maria Souza", "linha": 13 }
+  ] }

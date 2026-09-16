@@ -1,57 +1,37 @@
 # Cérebro Rural
 
-> ERP de micro-apps interligados para o produtor rural brasileiro.
-> Plataforma SaaS onde cada negócio do produtor (fazenda, obras, aluguéis, funcionários, investimentos) vira um app independente, e todos se conectam a um Cérebro Central com IA e fluxo de caixa unificado.
+> Uma **Tomada** onde qualquer app se pluga. Ela lê o que o app exporta, junta tudo numa **planilha mestre** que é sua, e mostra num **Painel** interativo. Só isso — feito muito bem.
+
+## O que é, em três linhas
+
+- **Tomada** — recebe planilha, extrato, export de qualquer sistema (xlsx, csv, ofx, xml de NF-e), entende o layout, lembra como cada fonte é, e nunca grava duas vezes. Cada número guarda de onde veio: arquivo, aba, linha.
+- **Planilha mestre** — tudo que entrou, normalizado, exportável a qualquer momento em xlsx/csv/Google Sheets. O dado é do produtor, não do sistema.
+- **Painel** — caixa consolidado por negócio (fazenda, frigorífico, imóveis, comércio, pessoal), por mês, com drill-down até a linha original e uma fila de revisão para o que ficou em dúvida.
+
+## Onde está cada coisa
+
+| Caminho | O que é |
+|---|---|
+| [`IDEIA.md`](./IDEIA.md) | por que existe e para quem |
+| [`TOMADA.md`](./TOMADA.md) | **como a leitura funciona**, etapa por etapa — o documento central |
+| [`PAINEL.md`](./PAINEL.md) | o que o painel mostra e como a planilha mestre sai |
+| [`DECISOES.md`](./DECISOES.md) | decisões e seus motivos, numeradas |
+| [`QUALIDADE.md`](./QUALIDADE.md) | a definição mensurável de "pronto" e os portões de cada fase |
+| [`app/`](./app/) | o único produto: Vite + React + TypeScript + Supabase |
+| [`historico/`](./historico/) | por que recomeçamos (análise crítica, questionário, decisões da v0) |
+
+## Rodar
+
+```bash
+cd app
+npm install
+npm test          # a biblioteca de leitura contra as fixtures reais
+npm run dev       # abre o painel em http://localhost:5173
+```
+
+## Regra da casa
+
+**Documento descreve o que existe no código.** Se divergirem, o código vence e o documento é corrigido no mesmo commit. Nenhum arquivo `.md` novo na raiz até a v1 estar em uso real.
 
 ---
-
-## Se você está abrindo o projeto pela primeira vez: leia [`CONTINUAR.md`](./CONTINUAR.md)
-
----
-
-## Documentos principais
-
-- [`CONTINUAR.md`](./CONTINUAR.md) — **leia primeiro** — ponto de partida para qualquer nova sessão
-- [`IDEIA.md`](./IDEIA.md) — visão do produto, problema, solução, modelo de negócio
-- [`ARQUITETURA.md`](./ARQUITETURA.md) — stack, conector universal, IA
-- [`INTEGRIDADE.md`](./INTEGRIDADE.md) — **pilar fundamental** — 5 checkpoints obrigatórios
-- [`CAPTURA.md`](./CAPTURA.md) — captura multi-plataforma (WhatsApp, email, share sheet)
-- [`SCHEMA.md`](./SCHEMA.md) — banco Supabase compartilhado
-- [`ROADMAP.md`](./ROADMAP.md) — fases e critérios de pronto
-- [`TESTES.md`](./TESTES.md) — 8 testes mínimos por módulo
-- [`ADAPTADOR_UNIVERSAL_GO_PLUGIN.md`](./ADAPTADOR_UNIVERSAL_GO_PLUGIN.md) — blueprint do adaptador universal multi-linguagem (go-plugin + gRPC)
-- [`plugins/`](./plugins/) — implementação Fase 1: contrato gRPC, host Go, SDK e plugin `hello`
-- [`DECISOES.md`](./DECISOES.md) — log de decisões arquiteturais
-- [`IDEIAS_FUTURAS.md`](./IDEIAS_FUTURAS.md) — parking lot de ideias
-
----
-
-## Micro-apps documentados
-
-### Pronto para codar
-- [`apps/almoxarifado/`](./apps/almoxarifado/) — documentação completa (escopo, schema, conector)
-
-### Especificação parcial
-- [`apps/calculadora-boi/`](./apps/calculadora-boi/) — 3 modos definidos (compra, venda, conferência)
-- [`apps/pastagem/`](./apps/pastagem/)
-- [`apps/manejo-gado/`](./apps/manejo-gado/)
-- [`apps/obras/`](./apps/obras/)
-- [`apps/funcionarios/`](./apps/funcionarios/)
-- [`apps/aluguel/`](./apps/aluguel/)
-- [`apps/vida-pessoal/`](./apps/vida-pessoal/)
-- [`apps/bolsa-fii/`](./apps/bolsa-fii/)
-
-### Hub central
-- [`apps/cerebro/`](./apps/cerebro/) — consolidador (construído por último)
-
----
-
-## Filosofia em uma frase
-
-**Cada app nasce completo e sozinho. Só depois conecta. E nenhum dado entra no banco sem passar pelos cinco checkpoints da Camada de Integridade.**
-
----
-
-*Autor: Thiago Oliveira (tportooliveira-alt)*
-*Vitória da Conquista, Bahia — Brasil*
-*Abril 2026*
+*Thiago Oliveira — Vitória da Conquista, Bahia. Recomeçado em setembro de 2026.*
